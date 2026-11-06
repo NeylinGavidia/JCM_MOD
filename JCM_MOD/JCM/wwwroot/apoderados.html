@@ -1,0 +1,365 @@
+﻿<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registro de apoderados - I.E. José Carlos Mariátegui</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet">
+    <link rel="stylesheet" href="css/variables.css">
+    <link rel="stylesheet" href="css/layout.css">
+</head>
+<body data-page="apoderados">
+    <main class="content" id="contenido">
+        <div class="page-shell">
+            <div class="module-header-line">MÓDULO PADRÓN OFICIAL • RD03 / RF04 / RF07</div>
+
+            <div class="module-title-row">
+                <div class="module-copy">
+                    <h2>Registro y Directorio de Apoderados</h2>
+                    <p>Padrón oficial de padres de familia y tutores legales vinculados a estudiantes matriculados (RF03, RF04, RF07) con sincronización activa en SIAGIE y validación RENIEC.</p>
+                </div>
+                <div class="header-actions">
+                    <button type="button" class="btn btn-sec" id="btn-asociar-apoderado"><span class="material-symbols-outlined">link</span>Asociar apoderado</button>
+                    <a class="btn btn-sec" href="reportes.html"><span class="material-symbols-outlined">download</span>Exportar Directorio (Excel)</a>
+                    <a class="btn btn-pri" href="apoderados-registro.html"><span class="material-symbols-outlined">person_add</span>Nuevo Apoderado</a>
+                </div>
+            </div>
+
+            <div class="kpi-grid apoderado-grid">
+                <article class="kpi-card">
+                    <div class="metric-head"><span class="material-symbols-outlined">supervisor_account</span><span>APODERADOS REGISTRADOS</span></div>
+                    <div class="metric-value" id="total-apoderados">154</div>
+                    <div class="metric-meta"><span class="trend up">+12%</span> vs. período regular</div>
+                </article>
+
+                <article class="kpi-card">
+                    <div class="metric-head"><span class="material-symbols-outlined">verified</span><span>VALIDACIÓN RENIEC</span></div>
+                    <div class="metric-value">98.7%</div>
+                    <div class="metric-meta"><span class="chip chip-success">Válido</span></div>
+                </article>
+
+                <article class="kpi-card">
+                    <div class="metric-head"><span class="material-symbols-outlined">groups_2</span><span>MÚLTIPLES HIJOS</span></div>
+                    <div class="metric-value">14</div>
+                    <div class="metric-meta"><span>Entre 2 a 3 estudiantes a cargo</span></div>
+                </article>
+
+                <article class="kpi-card">
+                    <div class="metric-head"><span class="material-symbols-outlined">check_circle</span><span>CASOS ESPECIALES</span></div>
+                    <div class="metric-value">6</div>
+                    <div class="metric-meta"><span>Padres con RD o acta legal</span></div>
+                </article>
+            </div>
+
+            <div class="toolbar-card apoderado-toolbar">
+                <div class="toolbar-item search-box">
+                    <span class="material-symbols-outlined">search</span>
+                    <input type="text" value="Buscar por DNI / apoderado" aria-label="Buscar apoderado">
+                </div>
+                <div class="toolbar-item filter-pill">Todos (154)</div>
+                <div class="toolbar-item filter-pill">Padres (82)</div>
+                <div class="toolbar-item filter-pill">Madres (66)</div>
+                <div class="toolbar-item filter-pill">Tutores legales (6)</div>
+                <div class="toolbar-item select-box wide">
+                    <label>Grado del hijo:</label>
+                    <select>
+                        <option>Todos</option>
+                        <option>1°</option>
+                        <option>2°</option>
+                        <option>3°</option>
+                        <option>4°</option>
+                        <option>5°</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="table-card">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>DNI / verificación</th>
+                            <th>Apoderado</th>
+                            <th>Parentesco</th>
+                            <th>Contacto</th>
+                            <th>Casería / residencia</th>
+                            <th>Estudiantes a cargo</th>
+                            <th>Estado</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tbody-apoderados">
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="table-card">
+                <div class="module-title-row compact-row">
+                    <div class="module-copy">
+                        <h3>Revisión de asociaciones</h3>
+                    </div>
+                </div>
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Apoderado</th>
+                            <th>Estudiante</th>
+                            <th>Parentesco</th>
+                            <th>Fecha</th>
+                            <th>Observación</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tbody-asociaciones">
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+    <dialog id="modal-asociar-apoderado" class="modal">
+        <form method="dialog" id="form-asociar-apoderado">
+            <div class="modal-header">
+                <h3>Asociar apoderado con estudiante</h3>
+                <button type="button" class="icon-btn" data-close-asociacion aria-label="Cerrar formulario"><span class="material-symbols-outlined">close</span></button>
+            </div>
+
+            <div class="form-grid">
+                <label class="field">
+                    <span>Buscar apoderado</span>
+                    <input id="buscar-apoderado" type="text" placeholder="Nombre, DNI o código P...">
+                </label>
+
+                <label class="field">
+                    <span>Buscar estudiante</span>
+                    <input id="buscar-estudiante" type="text" placeholder="Nombre, DNI o código E...">
+                </label>
+
+                <label class="field">
+                    <span>Apoderado</span>
+                    <select id="asociar-apoderado-select" required></select>
+                </label>
+
+                <label class="field">
+                    <span>Estudiante</span>
+                    <select id="asociar-estudiante-select" required></select>
+                </label>
+
+                <label class="field">
+                    <span>Parentesco</span>
+                    <select id="asociar-parentesco" required>
+                        <option value="">Seleccione</option>
+                        <option value="Padre">Padre</option>
+                        <option value="Madre">Madre</option>
+                        <option value="Tutor legal">Tutor legal</option>
+                        <option value="Abuelo/a">Abuelo/a</option>
+                        <option value="Hermano/a mayor">Hermano/a mayor</option>
+                        <option value="Tío/a">Tío/a</option>
+                        <option value="Familiar">Familiar</option>
+                    </select>
+                </label>
+
+                <label class="field">
+                    <span>Fecha de asignación</span>
+                    <input id="asociar-fecha" type="date" required>
+                </label>
+
+                <label class="field full-width">
+                    <span>Observación</span>
+                    <textarea id="asociar-observacion" rows="4" placeholder="Ejemplo: Vive con la madre y asiste a reuniones trimestrales."></textarea>
+                </label>
+            </div>
+
+            <div class="modal-acciones">
+                <button type="button" class="btn btn-sec" data-close-asociacion>Cancelar</button>
+                <button type="submit" class="btn btn-pri">Guardar asociación</button>
+            </div>
+        </form>
+    </dialog>
+
+    <script src="js/app.js"></script>
+    <script>
+        (function () {
+            const seedStudents = [
+                { id: 'E0001', nombre: 'Diego', apellidoPaterno: 'Tantaleán', apellidoMaterno: 'Campos', dni: '73428190', fechaNacimiento: '2015-06-12', edad: 10, sexo: 'Masculino', historialEnfermedades: 'Ninguna', celular: '976432109', lugarProcedencia: 'Conchán', codigoModular: 'CM-001' },
+                { id: 'E0002', nombre: 'Lucas', apellidoPaterno: 'Bustamante', apellidoMaterno: 'Rojas', dni: '71984322', fechaNacimiento: '2014-11-18', edad: 11, sexo: 'Masculino', historialEnfermedades: 'Ninguna', celular: '942118732', lugarProcedencia: 'Conchán', codigoModular: 'CM-002' },
+                { id: 'E0003', nombre: 'Juan Esteban', apellidoPaterno: 'Vásquez', apellidoMaterno: 'Su', dni: '78811294', fechaNacimiento: '2012-03-11', edad: 14, sexo: 'Masculino', historialEnfermedades: 'Asma leve', celular: '979554210', lugarProcedencia: 'Caserío Conchán', codigoModular: 'CM-003' },
+                { id: 'E0004', nombre: 'Andrea', apellidoPaterno: 'Díaz', apellidoMaterno: 'Ramirez', dni: '74569831', fechaNacimiento: '2013-07-09', edad: 12, sexo: 'Femenino', historialEnfermedades: 'Ninguna', celular: '913220981', lugarProcedencia: 'Conchán', codigoModular: 'CM-004' }
+            ];
+            const seedParents = [
+                { id: 'P0001', nombre: 'Rosa Elvira', apellidoPaterno: 'Delgado', apellidoMaterno: 'Campos', dni: '27456389', sexo: 'Femenino', celular: '976432109', lugarProcedencia: 'Sector La Molina, Conchán' },
+                { id: 'P0002', nombre: 'Manuel Santos', apellidoPaterno: 'Bustamante', apellidoMaterno: '', dni: '27419842', sexo: 'Masculino', celular: '942118732', lugarProcedencia: 'Sector La Calera, Conchán' },
+                { id: 'P0003', nombre: 'Elena María', apellidoPaterno: 'Vásquez', apellidoMaterno: 'Su', dni: '27848123', sexo: 'Femenino', celular: '951228490', lugarProcedencia: 'Sector La Laguna, Caserío Conchán' },
+                { id: 'P0004', nombre: 'Virginia', apellidoPaterno: 'Rojas', apellidoMaterno: 'Pérez', dni: '27564891', sexo: 'Femenino', celular: '913220981', lugarProcedencia: 'Sector La Esperanza, Conchán' }
+            ];
+
+            function getList(key, fallback) {
+                const saved = JSON.parse(localStorage.getItem(key) || 'null');
+                if (Array.isArray(saved) && saved.length) {
+                    return saved;
+                }
+                localStorage.setItem(key, JSON.stringify(fallback));
+                return fallback;
+            }
+
+            function nombreCompletoPersona(persona) {
+                return [persona.nombre, persona.apellidoPaterno, persona.apellidoMaterno].filter(Boolean).join(' ');
+            }
+
+            function getAsignaciones() {
+                const saved = JSON.parse(localStorage.getItem('jcm_demo_asignaciones') || 'null');
+                if (Array.isArray(saved)) return saved;
+                localStorage.setItem('jcm_demo_asignaciones', JSON.stringify([]));
+                return [];
+            }
+
+            function renderApoderados() {
+                const apoderados = getList('jcm_demo_apoderados', seedParents);
+                const estudiantes = getList('jcm_demo_estudiantes', seedStudents);
+                const asignaciones = getAsignaciones();
+                const tbody = document.getElementById('tbody-apoderados');
+                const total = document.getElementById('total-apoderados');
+                if (!tbody) return;
+
+                tbody.innerHTML = apoderados.map((apoderado, index) => {
+                    const relaciones = asignaciones.filter((asignacion) => asignacion.apoderadoId === apoderado.id);
+                    const alumnos = relaciones.map((asignacion) => {
+                        const estudiante = estudiantes.find((e) => e.id === asignacion.estudianteId);
+                        return estudiante ? estudiante.nombre : 'Estudiante';
+                    });
+                    const hijos = alumnos.length ? alumnos.slice(0, 2).map((nombre) => `<span>${nombre}</span>`).join('') : '<span>Sin vínculo</span>';
+                    const parentesco = relaciones[0]?.parentesco || (apoderado.sexo === 'Masculino' ? 'Padre' : 'Madre');
+                    const estado = index % 3 === 0 ? '<span class="badge badge-warn">Pendiente</span>' : '<span class="badge badge-success">Verificado</span>';
+                    return `
+                        <tr>
+                            <td><div class="dni-box">${apoderado.dni}</div><small>Padrón 2026 - C</small></td>
+                            <td>${nombreCompletoPersona(apoderado)}</td>
+                            <td>${parentesco}</td>
+                            <td>${apoderado.celular}</td>
+                            <td>${apoderado.lugarProcedencia}</td>
+                            <td><div class="child-list">${hijos}</div></td>
+                            <td>${estado}</td>
+                            <td class="table-actions"><span class="material-symbols-outlined">visibility</span><span class="material-symbols-outlined">edit</span><span class="material-symbols-outlined">delete</span></td>
+                        </tr>
+                    `;
+                }).join('');
+
+                if (total) total.textContent = String(apoderados.length);
+            }
+
+            function renderAsociaciones() {
+                const apoderados = getList('jcm_demo_apoderados', seedParents);
+                const estudiantes = getList('jcm_demo_estudiantes', seedStudents);
+                const asignaciones = getAsignaciones();
+                const tbody = document.getElementById('tbody-asociaciones');
+                if (!tbody) return;
+
+                if (!asignaciones.length) {
+                    tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; color: var(--on-surface-variant);">No hay asociaciones registradas aún.</td></tr>';
+                    return;
+                }
+
+                tbody.innerHTML = asignaciones.map((asignacion) => {
+                    const apoderado = apoderados.find((item) => item.id === asignacion.apoderadoId);
+                    const estudiante = estudiantes.find((item) => item.id === asignacion.estudianteId);
+                    const apoderadoNombre = apoderado ? nombreCompletoPersona(apoderado) : 'Apoderado no encontrado';
+                    const estudianteNombre = estudiante ? nombreCompletoPersona(estudiante) : 'Estudiante no encontrado';
+                    return `
+                        <tr>
+                            <td>${apoderadoNombre}</td>
+                            <td>${estudianteNombre}</td>
+                            <td>${asignacion.parentesco}</td>
+                            <td>${asignacion.fechaAsignacion}</td>
+                            <td>${asignacion.observacion}</td>
+                        </tr>
+                    `;
+                }).join('');
+            }
+
+            function poblarSelects() {
+                const apoderados = getList('jcm_demo_apoderados', seedParents);
+                const estudiantes = getList('jcm_demo_estudiantes', seedStudents);
+                const apoderadoSelect = document.getElementById('asociar-apoderado-select');
+                const estudianteSelect = document.getElementById('asociar-estudiante-select');
+                if (!apoderadoSelect || !estudianteSelect) return;
+
+                const filtroApoderado = (document.getElementById('buscar-apoderado')?.value || '').toLowerCase().trim();
+                const filtroEstudiante = (document.getElementById('buscar-estudiante')?.value || '').toLowerCase().trim();
+
+                const apoderadosFiltrados = apoderados.filter((apoderado) => {
+                    const descripcion = `${nombreCompletoPersona(apoderado)} ${apoderado.dni} ${apoderado.id}`.toLowerCase();
+                    return descripcion.includes(filtroApoderado);
+                });
+
+                const estudiantesFiltrados = estudiantes.filter((estudiante) => {
+                    const descripcion = `${nombreCompletoPersona(estudiante)} ${estudiante.dni} ${estudiante.id}`.toLowerCase();
+                    return descripcion.includes(filtroEstudiante);
+                });
+
+                apoderadoSelect.innerHTML = '<option value="">Seleccione apoderado</option>' + apoderadosFiltrados.map((apoderado) => `<option value="${apoderado.id}">${nombreCompletoPersona(apoderado)} - ${apoderado.dni}</option>`).join('');
+                estudianteSelect.innerHTML = '<option value="">Seleccione estudiante</option>' + estudiantesFiltrados.map((estudiante) => `<option value="${estudiante.id}">${nombreCompletoPersona(estudiante)} - ${estudiante.id}</option>`).join('');
+            }
+
+            function abrirModalAsociacion() {
+                poblarSelects();
+                const modal = document.getElementById('modal-asociar-apoderado');
+                const fecha = document.getElementById('asociar-fecha');
+                if (fecha && !fecha.value) fecha.value = new Date().toISOString().slice(0, 10);
+                modal?.showModal();
+            }
+
+            function cerrarModalAsociacion() {
+                const modal = document.getElementById('modal-asociar-apoderado');
+                const form = document.getElementById('form-asociar-apoderado');
+                form?.reset();
+                modal?.close();
+            }
+
+            const btnAsociar = document.getElementById('btn-asociar-apoderado');
+            btnAsociar?.addEventListener('click', abrirModalAsociacion);
+
+            document.getElementById('buscar-apoderado')?.addEventListener('input', poblarSelects);
+            document.getElementById('buscar-estudiante')?.addEventListener('input', poblarSelects);
+
+            document.querySelectorAll('[data-close-asociacion]').forEach((boton) => {
+                boton.addEventListener('click', cerrarModalAsociacion);
+            });
+
+            const formAsociacion = document.getElementById('form-asociar-apoderado');
+            formAsociacion?.addEventListener('submit', (event) => {
+                event.preventDefault();
+                const apoderadoId = document.getElementById('asociar-apoderado-select')?.value;
+                const estudianteId = document.getElementById('asociar-estudiante-select')?.value;
+                const parentesco = document.getElementById('asociar-parentesco')?.value;
+                const fecha = document.getElementById('asociar-fecha')?.value;
+                const observacion = document.getElementById('asociar-observacion')?.value.trim();
+
+                if (!apoderadoId || !estudianteId || !parentesco || !fecha) {
+                    mostrarToast('Completa todos los campos para asociar el apoderado con el estudiante.', 'warn');
+                    return;
+                }
+
+                const asignaciones = getAsignaciones();
+                const nuevaAsignacion = {
+                    id: 'V' + String(Date.now()).slice(-8),
+                    apoderadoId,
+                    estudianteId,
+                    parentesco,
+                    fechaAsignacion: fecha,
+                    observacion: observacion || 'Sin observación registrada'
+                };
+
+                asignaciones.push(nuevaAsignacion);
+                localStorage.setItem('jcm_demo_asignaciones', JSON.stringify(asignaciones));
+                formAsociacion.reset();
+                renderApoderados();
+                renderAsociaciones();
+                cerrarModalAsociacion();
+                mostrarToast('Asociación guardada correctamente.', 'ok');
+            });
+
+            renderApoderados();
+            renderAsociaciones();
+        })();
+    </script>
+</body>
+</html>

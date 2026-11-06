@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registrar apoderado - I.E. José Carlos Mariátegui</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet">
+    <link rel="stylesheet" href="css/variables.css">
+    <link rel="stylesheet" href="css/layout.css">
+</head>
+<body data-page="apoderados">
+    <main class="content" id="contenido">
+        <div class="page-shell">
+            <div class="module-header-line">APODERADOS • Registro</div>
+
+            <div class="module-title-row">
+                <div class="module-copy">
+                    <h2>Registrar nuevo apoderado</h2>
+                    <p>Registre la información del responsable legal para vincularlo con los estudiantes.</p>
+                </div>
+                <div class="header-actions">
+                    <a class="btn btn-sec" href="apoderados.html"><span class="material-symbols-outlined">arrow_back</span>Volver al directorio</a>
+                </div>
+            </div>
+
+            <section class="form-card">
+                <form id="form-apoderado" novalidate>
+                    <div class="form-grid">
+                        <div class="field">
+                            <label for="apoderado-id">ID de Apoderado</label>
+                            <input id="apoderado-id" type="text" readonly>
+                        </div>
+
+                        <div class="field">
+                            <label for="apoderado-nombre">Nombre</label>
+                            <input id="apoderado-nombre" type="text" maxlength="80" required>
+                        </div>
+
+                        <div class="field">
+                            <label for="apoderado-paterno">Apellido paterno</label>
+                            <input id="apoderado-paterno" type="text" maxlength="80" required>
+                        </div>
+
+                        <div class="field">
+                            <label for="apoderado-materno">Apellido materno</label>
+                            <input id="apoderado-materno" type="text" maxlength="80" required>
+                        </div>
+
+                        <div class="field">
+                            <label for="apoderado-dni">DNI</label>
+                            <input id="apoderado-dni" type="text" inputmode="numeric" maxlength="8" required>
+                        </div>
+
+                        <div class="field">
+                            <label for="apoderado-sexo">Sexo</label>
+                            <select id="apoderado-sexo" required>
+                                <option value="">Seleccione</option>
+                                <option value="Masculino">Masculino</option>
+                                <option value="Femenino">Femenino</option>
+                            </select>
+                        </div>
+
+                        <div class="field">
+                            <label for="apoderado-celular">Celular</label>
+                            <input id="apoderado-celular" type="text" inputmode="numeric" maxlength="9" required>
+                        </div>
+
+                        <div class="field full-width">
+                            <label for="apoderado-lugar">Lugar de procedencia</label>
+                            <input id="apoderado-lugar" type="text" maxlength="120" required>
+                        </div>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="reset" class="btn btn-sec">Limpiar</button>
+                        <button type="submit" class="btn btn-pri">Guardar apoderado</button>
+                    </div>
+                </form>
+            </section>
+        </div>
+    </main>
+    <script src="js/app.js"></script>
+    <script>
+        function generarSiguienteId(prefijo, clave) {
+            const registros = JSON.parse(localStorage.getItem(clave) || '[]');
+            const maxNumero = registros.reduce((max, item) => {
+                const match = String(item.id || '').match(/(\d+)/);
+                const numero = match ? Number(match[1]) : 0;
+                return Math.max(max, numero);
+            }, 0);
+            const siguiente = registros.length ? maxNumero + 1 : 0;
+            return prefijo + String(siguiente).padStart(4, '0');
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const idInput = document.getElementById('apoderado-id');
+            idInput.value = generarSiguienteId('P', 'jcm_demo_apoderados');
+
+            const form = document.getElementById('form-apoderado');
+            form.addEventListener('submit', (event) => {
+                event.preventDefault();
+
+                const dni = document.getElementById('apoderado-dni').value.trim();
+                const celular = document.getElementById('apoderado-celular').value.trim();
+                if (!/^[0-9]{8}$/.test(dni)) {
+                    mostrarToast('El DNI debe tener 8 dígitos.', 'error');
+                    return;
+                }
+
+                if (!/^[0-9]{9}$/.test(celular)) {
+                    mostrarToast('El celular debe tener 9 dígitos.', 'error');
+                    return;
+                }
+
+                const apoderado = {
+                    id: document.getElementById('apoderado-id').value,
+                    nombre: document.getElementById('apoderado-nombre').value.trim(),
+                    apellidoPaterno: document.getElementById('apoderado-paterno').value.trim(),
+                    apellidoMaterno: document.getElementById('apoderado-materno').value.trim(),
+                    dni,
+                    sexo: document.getElementById('apoderado-sexo').value,
+                    celular,
+                    lugarProcedencia: document.getElementById('apoderado-lugar').value.trim()
+                };
+
+                const registros = JSON.parse(localStorage.getItem('jcm_demo_apoderados') || '[]');
+                registros.push(apoderado);
+                localStorage.setItem('jcm_demo_apoderados', JSON.stringify(registros));
+
+                mostrarToast('Apoderado registrado correctamente.', 'ok');
+                form.reset();
+                document.getElementById('apoderado-id').value = generarSiguienteId('P', 'jcm_demo_apoderados');
+            });
+        });
+    </script>
+</body>
+</html>

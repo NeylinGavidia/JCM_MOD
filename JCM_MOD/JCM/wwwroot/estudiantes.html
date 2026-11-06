@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Estudiantes - I.E. José Carlos Mariátegui</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet">
+    <link rel="stylesheet" href="css/variables.css">
+    <link rel="stylesheet" href="css/layout.css">
+</head>
+<body data-page="matricula">
+    <main class="content" id="contenido">
+        <div class="page-shell">
+            <div class="module-header-line">GESTIÓN ACADÉMICA • Año 2026 • Ordinario</div>
+
+            <div class="module-title-row">
+                <div class="module-copy">
+                    <h2>Ficha de Estudiantes</h2>
+                    <p>Registro detallado de estudiantes matriculados, grados, asistencia y estado académico en el proceso de inscripción escolar.</p>
+                </div>
+                <div class="header-actions">
+                    <a class="btn btn-sec" href="reportes.html"><span class="material-symbols-outlined">download</span>Exportar reporte</a>
+                    <a class="btn btn-pri" href="matricula.html"><span class="material-symbols-outlined">arrow_back</span>Volver al padrón</a>
+                </div>
+            </div>
+
+            <div class="kpi-grid">
+                <article class="kpi-card">
+                    <div class="metric-head"><span class="material-symbols-outlined">person</span><span>ESTUDIANTES</span></div>
+                    <div class="metric-value">168</div>
+                    <div class="metric-meta"><span>Matriculados</span><strong>100%</strong></div>
+                </article>
+
+                <article class="kpi-card">
+                    <div class="metric-head"><span class="material-symbols-outlined">check_circle</span><span>ASISTENCIA</span></div>
+                    <div class="metric-value">94.8%</div>
+                    <div class="metric-meta"><span>Promedio mensual</span><strong>+2.1%</strong></div>
+                </article>
+
+                <article class="kpi-card">
+                    <div class="metric-head"><span class="material-symbols-outlined">schedule</span><span>RETENCIÓN</span></div>
+                    <div class="metric-value">96.3%</div>
+                    <div class="metric-meta"><span>Al cierre del mes</span><strong>Estable</strong></div>
+                </article>
+
+                <article class="kpi-card">
+                    <div class="metric-head"><span class="material-symbols-outlined">warning</span><span>ALERTAS</span></div>
+                    <div class="metric-value">03</div>
+                    <div class="metric-meta"><span>Casos por revisión</span><strong>2 urgentes</strong></div>
+                </article>
+            </div>
+
+            <div class="toolbar-card">
+                <div class="toolbar-item search-box">
+                    <span class="material-symbols-outlined">search</span>
+                    <input type="text" value="Buscar estudiante por nombre o DNI" aria-label="Buscar estudiante">
+                </div>
+
+                <div class="toolbar-item select-box">
+                    <label>Grado:</label>
+                    <select>
+                        <option>Todos</option>
+                        <option>1°</option>
+                        <option>2°</option>
+                        <option>3°</option>
+                        <option>4°</option>
+                        <option>5°</option>
+                    </select>
+                </div>
+
+                <div class="toolbar-item select-box">
+                    <label>Sección:</label>
+                    <select>
+                        <option>Todos</option>
+                        <option>A</option>
+                        <option>B</option>
+                        <option>C</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="table-card">
+                <div class="module-title-row compact-row">
+                    <div class="module-copy">
+                        <h3>Estudiantes</h3>
+                    </div>
+                </div>
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Código</th>
+                            <th>Estudiante</th>
+                            <th>DNI</th>
+                            <th>Grado</th>
+                            <th>Sección</th>
+                            <th>Apoderado</th>
+                            <th>Estado</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tbody-estudiantes-ficha">
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="table-card">
+                <div class="module-title-row compact-row">
+                    <div class="module-copy">
+                        <h3>Matrículas</h3>
+                    </div>
+                </div>
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>ID Matrícula</th>
+                            <th>ID Estudiante</th>
+                            <th>Estudiante</th>
+                            <th>Fecha de matrícula</th>
+                            <th>Año lectivo</th>
+                            <th>Estado</th>
+                            <th>Observación</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tbody-matriculas-ficha">
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+    <script src="js/app.js"></script>
+    <script>
+        (function () {
+            const seedStudents = [
+                { id: 'E0001', nombre: 'Diego', apellidoPaterno: 'Tantaleán', apellidoMaterno: 'Campos', dni: '73428190', fechaNacimiento: '2015-06-12', edad: 10, sexo: 'Masculino', historialEnfermedades: 'Ninguna', celular: '976432109', lugarProcedencia: 'Conchán', codigoModular: 'CM-001' },
+                { id: 'E0002', nombre: 'Lucas', apellidoPaterno: 'Bustamante', apellidoMaterno: 'Rojas', dni: '71984322', fechaNacimiento: '2014-11-18', edad: 11, sexo: 'Masculino', historialEnfermedades: 'Ninguna', celular: '942118732', lugarProcedencia: 'Conchán', codigoModular: 'CM-002' },
+                { id: 'E0003', nombre: 'Juan Esteban', apellidoPaterno: 'Vásquez', apellidoMaterno: 'Su', dni: '78811294', fechaNacimiento: '2012-03-11', edad: 14, sexo: 'Masculino', historialEnfermedades: 'Asma leve', celular: '979554210', lugarProcedencia: 'Caserío Conchán', codigoModular: 'CM-003' },
+                { id: 'E0004', nombre: 'Andrea', apellidoPaterno: 'Díaz', apellidoMaterno: 'Ramirez', dni: '74569831', fechaNacimiento: '2013-07-09', edad: 12, sexo: 'Femenino', historialEnfermedades: 'Ninguna', celular: '913220981', lugarProcedencia: 'Conchán', codigoModular: 'CM-004' }
+            ];
+            const seedMatriculas = [
+                { idMatricula: 'M0001-2026', estudianteId: 'E0001', fechaMatricula: '2026-01-14', anioLectivo: '2026', estado: 'Finalizado', observacion: 'Ingreso regular con ficha completa.' },
+                { idMatricula: 'M0002-2026', estudianteId: 'E0002', fechaMatricula: '2026-01-16', anioLectivo: '2026', estado: 'Pendiente', observacion: 'Documento de traslado pendiente.' },
+                { idMatricula: 'M0003-2026', estudianteId: 'E0003', fechaMatricula: '2026-01-18', anioLectivo: '2026', estado: 'Ratificado', observacion: 'Matricula ratificada por coordinación.' },
+                { idMatricula: 'M0004-2026', estudianteId: 'E0004', fechaMatricula: '2026-01-22', anioLectivo: '2026', estado: 'Finalizado', observacion: 'Estudiante con ingreso en primera semana.' }
+            ];
+
+            function getList(key, fallback) {
+                const saved = JSON.parse(localStorage.getItem(key) || 'null');
+                if (Array.isArray(saved) && saved.length) {
+                    return saved;
+                }
+                localStorage.setItem(key, JSON.stringify(fallback));
+                return fallback;
+            }
+
+            function nombreCompletoPersona(persona) {
+                return [persona.nombre, persona.apellidoPaterno, persona.apellidoMaterno].filter(Boolean).join(' ');
+            }
+
+            function getMatriculas() {
+                const saved = JSON.parse(localStorage.getItem('jcm_demo_matriculas') || 'null');
+                if (Array.isArray(saved) && saved.length) return saved;
+                localStorage.setItem('jcm_demo_matriculas', JSON.stringify(seedMatriculas));
+                return seedMatriculas;
+            }
+
+            function badgeEstado(estado) {
+                const mapa = {
+                    'Pendiente': 'badge badge-warn',
+                    'Finalizado': 'badge badge-success',
+                    'Cancelado': 'badge badge-danger',
+                    'Traslado': 'badge badge-neutral',
+                    'Retirado': 'badge badge-neutral',
+                    'Suspendido': 'badge badge-warn',
+                    'Ratificado': 'badge badge-success'
+                };
+                const className = mapa[estado] || 'badge';
+                return `<span class="${className}">${estado}</span>`;
+            }
+
+            function renderFichaEstudiantes() {
+                const estudiantes = getList('jcm_demo_estudiantes', seedStudents);
+                const tbody = document.getElementById('tbody-estudiantes-ficha');
+                if (!tbody) return;
+                tbody.innerHTML = estudiantes.map((est, index) => {
+                    const grado = ['1°', '2°', '3°', '4°', '5°'][index % 5];
+                    const seccion = ['A', 'B', 'C'][index % 3];
+                    const estado = index % 4 === 0 ? '<span class="badge badge-warn">Pendiente</span>' : '<span class="badge badge-success">Activo</span>';
+                    return `
+                        <tr>
+                            <td>${est.id}</td>
+                            <td>${nombreCompletoPersona(est)}</td>
+                            <td>${est.dni}</td>
+                            <td>${grado}</td>
+                            <td>${seccion}</td>
+                            <td>${est.lugarProcedencia}</td>
+                            <td>${estado}</td>
+                            <td class="table-actions"><span class="material-symbols-outlined">visibility</span><span class="material-symbols-outlined">edit</span></td>
+                        </tr>
+                    `;
+                }).join('');
+            }
+
+            function renderMatriculasFicha() {
+                const estudiantes = getList('jcm_demo_estudiantes', seedStudents);
+                const matriculas = getMatriculas();
+                const tbody = document.getElementById('tbody-matriculas-ficha');
+                if (!tbody) return;
+
+                tbody.innerHTML = matriculas.map((matricula) => {
+                    const estudiante = estudiantes.find((item) => item.id === matricula.estudianteId) || { nombre: 'Estudiante', apellidoPaterno: '', apellidoMaterno: '' };
+                    return `
+                        <tr>
+                            <td>${matricula.idMatricula}</td>
+                            <td>${matricula.estudianteId}</td>
+                            <td>${nombreCompletoPersona(estudiante)}</td>
+                            <td>${matricula.fechaMatricula}</td>
+                            <td>${matricula.anioLectivo}</td>
+                            <td>${badgeEstado(matricula.estado)}</td>
+                            <td>${matricula.observacion}</td>
+                        </tr>
+                    `;
+                }).join('');
+            }
+
+            renderFichaEstudiantes();
+            renderMatriculasFicha();
+        })();
+    </script>
+</body>
+</html>

@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Padres de familia - I.E. José Carlos Mariátegui</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet">
+    <link rel="stylesheet" href="css/variables.css">
+    <link rel="stylesheet" href="css/layout.css">
+</head>
+<body data-page="apoderados">
+    <main class="content" id="contenido">
+        <div class="page-shell">
+            <div class="module-header-line">MÓDULO PADRÓN OFICIAL • Registro 2026</div>
+
+            <div class="module-title-row">
+                <div class="module-copy">
+                    <h2>Registro de Padres y Tutores</h2>
+                    <p>Directorio de responsables legales, parentesco, contacto de emergencia y validación de datos vinculados a cada estudiante.</p>
+                </div>
+                <div class="header-actions">
+                    <a class="btn btn-sec" href="reportes.html"><span class="material-symbols-outlined">download</span>Exportar directorio</a>
+                    <a class="btn btn-pri" href="apoderados.html"><span class="material-symbols-outlined">arrow_back</span>Volver a apoderados</a>
+                </div>
+            </div>
+
+            <div class="kpi-grid">
+                <article class="kpi-card">
+                    <div class="metric-head"><span class="material-symbols-outlined">family_restroom</span><span>PADRES</span></div>
+                    <div class="metric-value">82</div>
+                    <div class="metric-meta"><span>Registrados</span><strong>+6%</strong></div>
+                </article>
+
+                <article class="kpi-card">
+                    <div class="metric-head"><span class="material-symbols-outlined">verified</span><span>VALIDADOS</span></div>
+                    <div class="metric-value">98.7%</div>
+                    <div class="metric-meta"><span>RENIEC confirmado</span><strong>OK</strong></div>
+                </article>
+
+                <article class="kpi-card">
+                    <div class="metric-head"><span class="material-symbols-outlined">groups</span><span>HIJOS</span></div>
+                    <div class="metric-value">154</div>
+                    <div class="metric-meta"><span>Estudiantes vinculados</span><strong>100%</strong></div>
+                </article>
+
+                <article class="kpi-card">
+                    <div class="metric-head"><span class="material-symbols-outlined">support_agent</span><span>CASOS</span></div>
+                    <div class="metric-value">06</div>
+                    <div class="metric-meta"><span>Con revisión especial</span><strong>3 urgentes</strong></div>
+                </article>
+            </div>
+
+            <div class="toolbar-card apoderado-toolbar">
+                <div class="toolbar-item search-box">
+                    <span class="material-symbols-outlined">search</span>
+                    <input type="text" value="Buscar padre o apoderado" aria-label="Buscar padre">
+                </div>
+                <div class="toolbar-item filter-pill">Padres (82)</div>
+                <div class="toolbar-item filter-pill">Madres (66)</div>
+                <div class="toolbar-item filter-pill">Tutores (6)</div>
+                <div class="toolbar-item select-box wide">
+                    <label>Tipo:</label>
+                    <select>
+                        <option>Todos</option>
+                        <option>Padre</option>
+                        <option>Madre</option>
+                        <option>Tutor legal</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="table-card">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>DNI</th>
+                            <th>Apoderado</th>
+                            <th>Parentesco</th>
+                            <th>Celular</th>
+                            <th>Dirección</th>
+                            <th>Estudiantes</th>
+                            <th>Estado</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tbody-padres-ficha">
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+    <script src="js/app.js"></script>
+    <script>
+        (function () {
+            const seedParents = [
+                { id: 'P0001', nombre: 'Rosa Elvira', apellidoPaterno: 'Delgado', apellidoMaterno: 'Campos', dni: '27456389', sexo: 'Femenino', celular: '976432109', lugarProcedencia: 'Sector La Molina, Conchán' },
+                { id: 'P0002', nombre: 'Manuel Santos', apellidoPaterno: 'Bustamante', apellidoMaterno: '', dni: '27419842', sexo: 'Masculino', celular: '942118732', lugarProcedencia: 'Sector La Calera, Conchán' },
+                { id: 'P0003', nombre: 'Elena María', apellidoPaterno: 'Vásquez', apellidoMaterno: 'Su', dni: '27848123', sexo: 'Femenino', celular: '951228490', lugarProcedencia: 'Sector La Laguna, Caserío Conchán' },
+                { id: 'P0004', nombre: 'Virginia', apellidoPaterno: 'Rojas', apellidoMaterno: 'Pérez', dni: '27564891', sexo: 'Femenino', celular: '913220981', lugarProcedencia: 'Sector La Esperanza, Conchán' }
+            ];
+
+            function getList(key, fallback) {
+                const saved = JSON.parse(localStorage.getItem(key) || 'null');
+                if (Array.isArray(saved) && saved.length) {
+                    return saved;
+                }
+                localStorage.setItem(key, JSON.stringify(fallback));
+                return fallback;
+            }
+
+            function nombreCompletoPersona(persona) {
+                const nombre = [persona.nombre, persona.apellidoPaterno, persona.apellidoMaterno].filter(Boolean).join(' ');
+                return nombre || 'Sin nombre';
+            }
+
+            function renderPadresFicha() {
+                const apoderados = getList('jcm_demo_apoderados', seedParents);
+                const tbody = document.getElementById('tbody-padres-ficha');
+                if (!tbody) return;
+
+                tbody.innerHTML = apoderados.map((ap, index) => {
+                    const parentesco = ap.sexo === 'Masculino' ? 'Padre' : (ap.apellidoMaterno ? 'Madre' : 'Tutor');
+                    const estado = index % 3 === 0 ? '<span class="badge badge-warn">Pendiente</span>' : '<span class="badge badge-success">Verificado</span>';
+                    return `
+                        <tr>
+                            <td>${ap.dni}</td>
+                            <td>${nombreCompletoPersona(ap)}</td>
+                            <td>${parentesco}</td>
+                            <td>${ap.celular}</td>
+                            <td>${ap.lugarProcedencia}</td>
+                            <td>1 niño</td>
+                            <td>${estado}</td>
+                            <td class="table-actions"><span class="material-symbols-outlined">visibility</span><span class="material-symbols-outlined">edit</span></td>
+                        </tr>
+                    `;
+                }).join('');
+            }
+
+            renderPadresFicha();
+        })();
+    </script>
+</body>
+</html>

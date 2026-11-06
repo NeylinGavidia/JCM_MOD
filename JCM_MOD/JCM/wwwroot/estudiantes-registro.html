@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registrar estudiante - I.E. José Carlos Mariátegui</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet">
+    <link rel="stylesheet" href="css/variables.css">
+    <link rel="stylesheet" href="css/layout.css">
+</head>
+<body data-page="matricula">
+    <main class="content" id="contenido">
+        <div class="page-shell">
+            <div class="module-header-line">MATRÍCULA • Registro de estudiantes</div>
+
+            <div class="module-title-row">
+                <div class="module-copy">
+                    <h2>Registrar nuevo estudiante</h2>
+                    <p>Complete la información del estudiante y genere automáticamente su código institucional.</p>
+                </div>
+                <div class="header-actions">
+                    <a class="btn btn-sec" href="matricula.html"><span class="material-symbols-outlined">arrow_back</span>Volver al padrón</a>
+                </div>
+            </div>
+
+            <section class="form-card">
+                <form id="form-estudiante" novalidate>
+                    <div class="form-grid">
+                        <div class="field">
+                            <label for="estudiante-id">ID del Estudiante</label>
+                            <input id="estudiante-id" type="text" readonly>
+                        </div>
+
+                        <div class="field">
+                            <label for="nombre">Nombre</label>
+                            <input id="nombre" type="text" maxlength="80" required>
+                        </div>
+
+                        <div class="field">
+                            <label for="apellido-paterno">Apellido paterno</label>
+                            <input id="apellido-paterno" type="text" maxlength="80" required>
+                        </div>
+
+                        <div class="field">
+                            <label for="apellido-materno">Apellido materno</label>
+                            <input id="apellido-materno" type="text" maxlength="80" required>
+                        </div>
+
+                        <div class="field">
+                            <label for="dni">DNI</label>
+                            <input id="dni" type="text" inputmode="numeric" maxlength="8" required>
+                        </div>
+
+                        <div class="field">
+                            <label for="fecha-nacimiento">Fecha de nacimiento</label>
+                            <input id="fecha-nacimiento" type="date" required>
+                        </div>
+
+                        <div class="field">
+                            <label for="edad">Edad</label>
+                            <input id="edad" type="number" min="3" max="25" readonly>
+                        </div>
+
+                        <div class="field">
+                            <label for="sexo">Sexo</label>
+                            <select id="sexo" required>
+                                <option value="">Seleccione</option>
+                                <option value="Masculino">Masculino</option>
+                                <option value="Femenino">Femenino</option>
+                            </select>
+                        </div>
+
+                        <div class="field full-width">
+                            <label for="historial-enfermedades">Historial de enfermedades</label>
+                            <textarea id="historial-enfermedades" rows="3" maxlength="300" placeholder="Ej. Asma, alergias, etc."></textarea>
+                        </div>
+
+                        <div class="field">
+                            <label for="celular">Celular</label>
+                            <input id="celular" type="text" inputmode="numeric" maxlength="9" required>
+                        </div>
+
+                        <div class="field">
+                            <label for="lugar-procedencia">Lugar de procedencia</label>
+                            <input id="lugar-procedencia" type="text" maxlength="120" required>
+                        </div>
+
+                        <div class="field">
+                            <label for="codigo-modular">Código modular</label>
+                            <input id="codigo-modular" type="text" maxlength="20" required>
+                        </div>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="reset" class="btn btn-sec">Limpiar</button>
+                        <button type="submit" class="btn btn-pri">Guardar estudiante</button>
+                    </div>
+                </form>
+            </section>
+        </div>
+    </main>
+    <script src="js/app.js"></script>
+    <script>
+        function calcularEdad(fechaNacimiento) {
+            if (!fechaNacimiento) return '';
+            const hoy = new Date();
+            const nacimiento = new Date(fechaNacimiento);
+            let edad = hoy.getFullYear() - nacimiento.getFullYear();
+            const m = hoy.getMonth() - nacimiento.getMonth();
+            if (m < 0 || (m === 0 && hoy.getDate() < nacimiento.getDate())) {
+                edad--;
+            }
+            return edad;
+        }
+
+        function generarSiguienteId(prefijo, clave) {
+            const registros = JSON.parse(localStorage.getItem(clave) || '[]');
+            const maxNumero = registros.reduce((max, item) => {
+                const match = String(item.id || '').match(/(\d+)/);
+                const numero = match ? Number(match[1]) : 0;
+                return Math.max(max, numero);
+            }, 0);
+            const siguiente = registros.length ? maxNumero + 1 : 0;
+            return prefijo + String(siguiente).padStart(4, '0');
+        }
+
+        function inicializarFormulario() {
+            const idInput = document.getElementById('estudiante-id');
+            idInput.value = generarSiguienteId('E', 'jcm_demo_estudiantes');
+
+            const fn = document.getElementById('fecha-nacimiento');
+            const edad = document.getElementById('edad');
+            fn.addEventListener('change', () => {
+                edad.value = calcularEdad(fn.value);
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            inicializarFormulario();
+
+            const form = document.getElementById('form-estudiante');
+            form.addEventListener('submit', (event) => {
+                event.preventDefault();
+
+                const dni = document.getElementById('dni').value.trim();
+                const celular = document.getElementById('celular').value.trim();
+                if (!/^[0-9]{8}$/.test(dni)) {
+                    mostrarToast('El DNI debe tener 8 dígitos.', 'error');
+                    return;
+                }
+
+                if (!/^[0-9]{9}$/.test(celular)) {
+                    mostrarToast('El celular debe tener 9 dígitos.', 'error');
+                    return;
+                }
+
+                const estudiante = {
+                    id: document.getElementById('estudiante-id').value,
+                    nombre: document.getElementById('nombre').value.trim(),
+                    apellidoPaterno: document.getElementById('apellido-paterno').value.trim(),
+                    apellidoMaterno: document.getElementById('apellido-materno').value.trim(),
+                    dni,
+                    fechaNacimiento: document.getElementById('fecha-nacimiento').value,
+                    edad: Number(document.getElementById('edad').value || 0),
+                    sexo: document.getElementById('sexo').value,
+                    historialEnfermedades: document.getElementById('historial-enfermedades').value.trim(),
+                    celular,
+                    lugarProcedencia: document.getElementById('lugar-procedencia').value.trim(),
+                    codigoModular: document.getElementById('codigo-modular').value.trim()
+                };
+
+                const registros = JSON.parse(localStorage.getItem('jcm_demo_estudiantes') || '[]');
+                registros.push(estudiante);
+                localStorage.setItem('jcm_demo_estudiantes', JSON.stringify(registros));
+
+                mostrarToast('Estudiante registrado correctamente.', 'ok');
+                form.reset();
+                document.getElementById('estudiante-id').value = generarSiguienteId('E', 'jcm_demo_estudiantes');
+                document.getElementById('edad').value = '';
+            });
+        });
+    </script>
+</body>
+</html>
