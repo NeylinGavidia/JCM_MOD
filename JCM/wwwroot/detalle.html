@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Detalle del Expediente</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Plus+Jakarta+Sans:wght@600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <div class="main-container">
+    <aside class="sidebar">
+      <div class="brand"><span style="font-size: 24px;">🏫</span><div><div class="brand-title">I.E. José Carlos Mariátegui</div><div class="brand-sub">Conchán - Chota</div></div></div>
+      <nav>
+        <a href="principal.html" class="nav-item">🏠 Inicio</a>
+        <a href="matricula.html" class="nav-item">📝 Matrícula</a>
+        <a href="bandeja.html" class="nav-item active">📂 Mesa de Partes</a>
+      </nav>
+    </aside>
+
+    <main class="content-area">
+      <div class="module-header">
+        <div>
+          <h1>Detalle del Expediente: EXP-2026-0049</h1>
+          <p>Información completa y trazabilidad del documento.</p>
+        </div>
+        <a href="bandeja.html" class="btn-secondary" style="text-decoration: none;">← Volver a la bandeja</a>
+      </div>
+
+      <div class="form-grid">
+        <div class="form-section">
+          <div class="form-section-title">👤 Datos del Remitente</div>
+          <p><strong>Nombres:</strong> Prof. Manuel Humberto Díaz Tapia</p>
+          <p><strong>DNI:</strong> 41209954</p>
+          <p><strong>Correo:</strong> m.diaz@correo.com</p>
+          <p><strong>Condición:</strong> Docente</p>
+        </div>
+        <div class="form-section">
+          <div class="form-section-title">📄 Datos del Documento</div>
+          <p><strong>Tipo:</strong> Informe</p>
+          <p><strong>Asunto:</strong> Informe pedagógico diagnóstico del área de Comunicación</p>
+          <p><strong>Folios:</strong> 4 folios</p>
+          <p><strong>Fecha de Recepción:</strong> 12/03/2026 - 08:00 AM</p>
+        </div>
+      </div>
+
+      <div class="form-section">
+        <div class="form-section-title">📝 Observaciones y Seguimiento</div>
+        <div class="form-group">
+          <label>Estado Actual</label>
+          <select class="form-control">
+            <option>Registrado</option>
+            <option selected>En Revisión</option>
+            <option>Atendido</option>
+            <option>Observado</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Agregar Observación</label>
+          <textarea class="form-control" rows="3" placeholder="Escriba aquí una nota...">Se deriva a Coordinación Académica para su revisión.</textarea>
+        </div>
+        <div class="form-actions">
+          <button class="btn-primary">Guardar Cambios</button>
+        </div>
+      </div>
+    </main>
+  </div>
+</body>
+</html>
