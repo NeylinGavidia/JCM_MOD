@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Registrar Nuevo Documento</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Plus+Jakarta+Sans:wght@600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <div class="main-container">
+    <aside class="sidebar">
+      <div class="brand">
+        <span style="font-size: 24px;">🏫</span>
+        <div>
+          <div class="brand-title">I.E. José Carlos Mariátegui</div>
+          <div class="brand-sub">Conchán - Chota</div>
+        </div>
+      </div>
+      <nav>
+        <a href="principal.html" class="nav-item">🏠 Inicio</a>
+        <a href="matricula.html" class="nav-item">📝 Matrícula</a>
+        <a href="bandeja.html" class="nav-item active">📂 Mesa de Partes</a>
+      </nav>
+    </aside>
+
+    <main class="content-area">
+      <div class="module-header">
+        <div>
+          <h1>Registro de Nuevo Documento</h1>
+          <p>Complete los datos para generar el expediente y registrar la recepción.</p>
+        </div>
+        <a href="bandeja.html" class="btn-secondary" style="text-decoration: none;">← Volver</a>
+      </div>
+
+      <form id="formRegistro">
+        <div class="form-grid">
+          <div class="form-section">
+            <div class="form-section-title">👤 Datos del Remitente</div>
+            <div class="form-group">
+              <label>Nombres y Apellidos <span class="required">*</span></label>
+              <input type="text" class="form-control" id="nombreRemitente" placeholder="Ej. Manuel Humberto Díaz Tapia" required>
+            </div>
+            <div class="form-group">
+              <label>DNI <span class="required">*</span></label>
+              <input type="text" class="form-control" id="dniRemitente" placeholder="8 dígitos" maxlength="8" required>
+              <div class="error-message">El DNI debe tener exactamente 8 dígitos numéricos.</div>
+            </div>
+            <div class="form-group">
+              <label>Correo Electrónico</label>
+              <input type="email" class="form-control" id="correoRemitente" placeholder="ejemplo@correo.com">
+              <div class="error-message">Ingrese un correo válido.</div>
+            </div>
+          </div>
+
+          <div class="form-section">
+            <div class="form-section-title">📄 Datos del Documento</div>
+            <div class="form-group">
+              <label>Tipo de Documento <span class="required">*</span></label>
+              <select class="form-control" required>
+                <option value="">Seleccione...</option>
+                <option>Informe</option>
+                <option>Oficio</option>
+                <option>Solicitud</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Asunto <span class="required">*</span></label>
+              <input type="text" class="form-control" id="asunto" placeholder="Descripción breve" required>
+            </div>
+            <div class="form-group">
+              <label>Número de Folios <span class="required">*</span></label>
+              <input type="number" class="form-control" id="folios" placeholder="Ej. 4" min="1" max="500" required>
+              <div class="error-message">Ingrese un número de folios válido (1-500).</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-section">
+          <div class="form-section-title">📎 Archivo Adjunto (Opcional)</div>
+          <div class="upload-area" onclick="document.getElementById('archivoAdjunto').click()">
+            <p>Haga clic para seleccionar el archivo PDF/JPG/PNG (Máx. 5MB)</p>
+            <input type="file" id="archivoAdjunto" accept=".pdf,.jpg,.jpeg,.png" style="display: none;">
+          </div>
+        </div>
+
+        <div class="form-actions">
+          <button type="button" class="btn-secondary" onclick="window.location.href='bandeja.html'">Cancelar</button>
+          <button type="submit" class="btn-primary">Registrar y Generar Expediente</button>
+        </div>
+      </form>
+    </main>
+  </div>
+  <script src="js/registro.js"></script>
+</body>
+</html>
