@@ -13,15 +13,13 @@
 <body data-page="apoderados">
     <main class="content" id="contenido">
         <div class="page-shell">
-            <div class="module-header-line">MÓDULO PADRÓN OFICIAL • Registro 2026</div>
-
             <div class="module-title-row">
                 <div class="module-copy">
                     <h2>Registro de Padres y Tutores</h2>
-                    <p>Directorio de responsables legales, parentesco, contacto de emergencia y validación de datos vinculados a cada estudiante.</p>
+                    <p>Consulta, edita y elimina la información de padres y tutores registrados.</p>
                 </div>
                 <div class="header-actions">
-                    <a class="btn btn-sec" href="reportes.html"><span class="material-symbols-outlined">download</span>Exportar directorio</a>
+                    <a class="btn btn-sec" href="reportes.html"><span class="material-symbols-outlined">download</span>Exportar</a>
                     <a class="btn btn-pri" href="apoderados.html"><span class="material-symbols-outlined">arrow_back</span>Volver a apoderados</a>
                 </div>
             </div>
@@ -77,7 +75,6 @@
                         <tr>
                             <th>DNI</th>
                             <th>Apoderado</th>
-                            <th>Parentesco</th>
                             <th>Celular</th>
                             <th>Dirección</th>
                             <th>Estudiantes</th>
@@ -103,7 +100,7 @@
 
             function getList(key, fallback) {
                 const saved = JSON.parse(localStorage.getItem(key) || 'null');
-                if (Array.isArray(saved) && saved.length) {
+                if (Array.isArray(saved)) {
                     return saved;
                 }
                 localStorage.setItem(key, JSON.stringify(fallback));
@@ -121,24 +118,40 @@
                 if (!tbody) return;
 
                 tbody.innerHTML = apoderados.map((ap, index) => {
-                    const parentesco = ap.sexo === 'Masculino' ? 'Padre' : (ap.apellidoMaterno ? 'Madre' : 'Tutor');
                     const estado = index % 3 === 0 ? '<span class="badge badge-warn">Pendiente</span>' : '<span class="badge badge-success">Verificado</span>';
                     return `
                         <tr>
                             <td>${ap.dni}</td>
                             <td>${nombreCompletoPersona(ap)}</td>
-                            <td>${parentesco}</td>
                             <td>${ap.celular}</td>
                             <td>${ap.lugarProcedencia}</td>
                             <td>1 niño</td>
                             <td>${estado}</td>
-                            <td class="table-actions"><span class="material-symbols-outlined">visibility</span><span class="material-symbols-outlined">edit</span></td>
+                            <td>${accionesCrudLista(ap.id)}</td>
                         </tr>
                     `;
                 }).join('');
             }
 
             renderPadresFicha();
+            habilitarCrudLista({
+                tbodyId: 'tbody-padres-ficha',
+                clave: 'jcm_demo_apoderados',
+                campos: [
+                    { key: 'nombre', label: 'Nombre', validation: 'letters' },
+                    { key: 'apellidoPaterno', label: 'Apellido paterno', validation: 'letters' },
+                    { key: 'apellidoMaterno', label: 'Apellido materno', validation: 'letters' },
+                    { key: 'dni', label: 'DNI', validation: 'dni' },
+                    { key: 'sexo', label: 'Sexo', options: ['Masculino', 'Femenino'] },
+                    { key: 'celular', label: 'Celular', validation: 'phone', optional: true },
+                    { key: 'lugarProcedencia', label: 'Lugar de procedencia', validation: 'letters', optional: true }
+                ],
+                alCambiar: renderPadresFicha,
+                alEliminar: (apoderado) => {
+                    const asignaciones = JSON.parse(localStorage.getItem('jcm_demo_asignaciones') || '[]');
+                    localStorage.setItem('jcm_demo_asignaciones', JSON.stringify(asignaciones.filter((item) => item.apoderadoId !== apoderado.id)));
+                }
+            });
         })();
     </script>
 </body>

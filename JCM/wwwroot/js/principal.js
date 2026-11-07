@@ -4,7 +4,7 @@
     if (!sesionActiva()) return; // app.js se encarga de volver al inicio de sesión
 
     let datos = leerDatos();
-    const TIPOS = ['Solicitud', 'Certificado', 'Constancia', 'Oficio', 'Otro'];
+    const TIPOS = ['Solicitud', 'Certificado', 'Constancia', 'Oficio', 'Informe', 'Otro'];
     const ESTADOS = { 'Pendiente': 'warn', 'En revisión': 'info', 'Atendido': 'ok' };
 
     const $ = id => document.getElementById(id);
@@ -14,8 +14,6 @@
         const h = new Date().getHours();
         const saludo = h < 12 ? 'Buenos días' : h < 19 ? 'Buenas tardes' : 'Buenas noches';
         $('saludo').textContent = saludo + ', ' + APP.nombre;
-        const f = new Date().toLocaleDateString('es-PE', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
-        $('fecha').textContent = f.charAt(0).toUpperCase() + f.slice(1);
     }
 
     /* ---------- Resumen ---------- */
@@ -23,7 +21,7 @@
         const total = datos.aforo.reduce((s, a) => s + a.matriculados, 0);
         const cupos = datos.aforo.reduce((s, a) => s + a.capacidad, 0);
         const porcentaje = cupos ? Math.round(total / cupos * 100) : 0;
-        const pendientes = datos.tramites.filter(t => t.estado === 'Pendiente').length;
+        const pendientes = datos.tramites.filter(t => ['pendiente', 'registrado', 'en revisión'].includes(String(t.estado).toLocaleLowerCase('es'))).length;
         const tarjeta = (icono, etiqueta, valor, detalle, clase) =>
             '<div class="stat ' + (clase || '') + '"><div class="etiqueta"><span class="material-symbols-outlined">' + icono + '</span>' + etiqueta + '</div>' +
             '<div class="valor">' + valor + '</div><div class="detalle">' + detalle + '</div></div>';
@@ -46,7 +44,7 @@
             return '<div class="fila-aforo ' + (llena ? 'llena' : casi ? 'casi' : '') + '">' +
                 '<b>' + esc(a.seccion) + '</b>' +
                 '<div class="barra" role="img" aria-label="' + pct + '% ocupado"><span style="width:' + pct + '%"></span></div>' +
-                '<span class="cupo">' + a.matriculados + ' / ' + a.capacidad + '</span>' + chip + '</div>';
+                '<span class="cupo">' + a.matriculados + ' / ' + a.capacidad + '</span>' + chip + accionesCrudLista(a.seccion) + '</div>';
         }).join('');
 
         const alerta = $('alerta-aforo');
@@ -65,17 +63,24 @@
     function pintarTramites() {
         const cuerpo = $('cuerpo-tramites');
         if (!datos.tramites.length) {
-            cuerpo.innerHTML = '<tr><td class="vacio" colspan="7">Aún no hay documentos recibidos. Usa “Recepcionar documento” para registrar el primero.</td></tr>';
+            cuerpo.innerHTML = '<tr><td class="vacio" colspan="8">Aún no hay documentos recibidos. Usa “Recepcionar documento” para registrar el primero.</td></tr>';
             return;
         }
         cuerpo.innerHTML = datos.tramites.slice(0, 6).map(t => {
             const f = new Date(t.fecha).toLocaleString('es-PE', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
             return '<tr><td><b>' + esc(t.codigo) + '</b></td><td>' + esc(t.remitente) + '</td><td>' + esc(t.tipo) + '</td><td>' + esc(t.asunto) + '</td>' +
-                '<td>' + esc(f) + '</td><td>' + esc(t.folios) + '</td><td><span class="chip ' + (ESTADOS[t.estado] || 'info') + '">' + esc(t.estado) + '</span></td></tr>';
+                '<td>' + esc(f) + '</td><td>' + esc(t.folios) + '</td><td><span class="chip ' + (ESTADOS[t.estado] || 'info') + '">' + esc(t.estado) + '</span></td>' +
+                '<td><a href="detalle.html?codigo=' + encodeURIComponent(t.codigo) + '">Ver expediente</a> ' + accionesCrudLista(t.codigo) + '</td></tr>';
         }).join('');
     }
 
     function pintarTodo() { pintarResumen(); pintarAforo(); pintarTramites(); }
+
+    window.addEventListener('storage', (event) => {
+        if (event.key !== APP.claveDatos) return;
+        datos = leerDatos();
+        pintarTodo();
+    });
 
     /* ---------- Recepcionar documento ---------- */
     function abrirRecepcion() {
@@ -84,13 +89,13 @@
         dlg.innerHTML =
             '<h3>Recepcionar documento</h3><p>Registra el documento que entrega la persona en mesa de partes.</p>' +
             '<form novalidate id="form-tramite">' +
-            campo('remitente', 'Nombre del remitente', '<input id="t-remitente" maxlength="80" autocomplete="off">') +
+            campo('remitente', 'Nombre del remitente', '<input id="t-remitente" maxlength="80" data-validation="letters" required autocomplete="off">') +
             '<div class="dos-col">' +
-            campo('dni', 'DNI', '<input id="t-dni" inputmode="numeric" maxlength="8" autocomplete="off">') +
-            campo('tipo', 'Tipo de documento', '<select id="t-tipo">' + TIPOS.map(t => '<option>' + t + '</option>').join('') + '</select>') +
+            campo('dni', 'DNI', '<input id="t-dni" inputmode="numeric" maxlength="8" pattern="[0-9]{8}" data-validation="dni" required autocomplete="off">') +
+            campo('tipo', 'Tipo de documento', '<select id="t-tipo" required>' + TIPOS.map(t => '<option>' + t + '</option>').join('') + '</select>') +
             '</div>' +
-            campo('asunto', 'Asunto', '<input id="t-asunto" maxlength="100" autocomplete="off">') +
-            campo('folios', 'Número de folios', '<input id="t-folios" type="number" min="1" max="500" value="1">') +
+            campo('asunto', 'Asunto', '<input id="t-asunto" maxlength="100" required autocomplete="off">') +
+            campo('folios', 'Número de folios', '<input id="t-folios" type="number" min="1" max="500" value="1" required>') +
             '<div class="modal-acciones"><button type="button" class="btn btn-sec" data-cerrar>Cancelar</button>' +
             '<button type="submit" class="btn btn-pri">Guardar y generar cargo</button></div></form>';
         document.body.appendChild(dlg);
@@ -184,6 +189,49 @@
 
     pintarSaludo();
     pintarTodo();
+    habilitarCrudLista({
+        tbodyId: 'lista-aforo',
+        idField: 'seccion',
+        campos: [
+            { key: 'seccion', label: 'Sección' },
+            { key: 'capacidad', label: 'Capacidad', type: 'number', min: 1 },
+            { key: 'matriculados', label: 'Matriculados', type: 'number', min: 0 }
+        ],
+        leerRegistros: () => datos.aforo,
+        guardarRegistros: (aforo) => {
+            const anterior = datos.aforo;
+            datos.aforo = aforo.map((item) => ({
+                ...item,
+                capacidad: Number(item.capacidad),
+                matriculados: Number(item.matriculados)
+            }));
+            if (guardarDatos(datos)) return true;
+            datos.aforo = anterior;
+            return false;
+        },
+        alCambiar: pintarTodo
+    });
+    habilitarCrudLista({
+        tbodyId: 'cuerpo-tramites',
+        idField: 'codigo',
+        campos: [
+            { key: 'remitente', label: 'Remitente', validation: 'letters' },
+            { key: 'dni', label: 'DNI', validation: 'dni' },
+            { key: 'tipo', label: 'Tipo de documento', options: TIPOS },
+            { key: 'asunto', label: 'Asunto' },
+            { key: 'folios', label: 'Número de folios', type: 'number' },
+            { key: 'estado', label: 'Estado', options: ['Pendiente', 'En revisión', 'Atendido'] }
+        ],
+        leerRegistros: () => datos.tramites,
+        guardarRegistros: (tramites) => {
+            const anterior = datos.tramites;
+            datos.tramites = tramites;
+            if (guardarDatos(datos)) return true;
+            datos.tramites = anterior;
+            return false;
+        },
+        alCambiar: pintarTodo
+    });
 
     const llenas = datos.aforo.filter(a => a.matriculados >= a.capacidad).map(a => a.seccion);
     if (llenas.length) {

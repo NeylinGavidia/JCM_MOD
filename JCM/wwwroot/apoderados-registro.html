@@ -13,12 +13,10 @@
 <body data-page="apoderados">
     <main class="content" id="contenido">
         <div class="page-shell">
-            <div class="module-header-line">APODERADOS • Registro</div>
-
             <div class="module-title-row">
                 <div class="module-copy">
                     <h2>Registrar nuevo apoderado</h2>
-                    <p>Registre la información del responsable legal para vincularlo con los estudiantes.</p>
+                    <p>Ingresa los datos del responsable para incorporarlo al directorio.</p>
                 </div>
                 <div class="header-actions">
                     <a class="btn btn-sec" href="apoderados.html"><span class="material-symbols-outlined">arrow_back</span>Volver al directorio</a>
@@ -35,22 +33,22 @@
 
                         <div class="field">
                             <label for="apoderado-nombre">Nombre</label>
-                            <input id="apoderado-nombre" type="text" maxlength="80" required>
+                            <input id="apoderado-nombre" type="text" maxlength="80" pattern="[^0-9]+" data-validation="letters" required>
                         </div>
 
                         <div class="field">
                             <label for="apoderado-paterno">Apellido paterno</label>
-                            <input id="apoderado-paterno" type="text" maxlength="80" required>
+                            <input id="apoderado-paterno" type="text" maxlength="80" pattern="[^0-9]+" data-validation="letters" required>
                         </div>
 
                         <div class="field">
                             <label for="apoderado-materno">Apellido materno</label>
-                            <input id="apoderado-materno" type="text" maxlength="80" required>
+                            <input id="apoderado-materno" type="text" maxlength="80" pattern="[^0-9]+" data-validation="letters" required>
                         </div>
 
                         <div class="field">
                             <label for="apoderado-dni">DNI</label>
-                            <input id="apoderado-dni" type="text" inputmode="numeric" maxlength="8" required>
+                            <input id="apoderado-dni" type="text" inputmode="numeric" maxlength="8" pattern="[0-9]{8}" data-validation="dni" required>
                         </div>
 
                         <div class="field">
@@ -64,12 +62,12 @@
 
                         <div class="field">
                             <label for="apoderado-celular">Celular</label>
-                            <input id="apoderado-celular" type="text" inputmode="numeric" maxlength="9" required>
+                            <input id="apoderado-celular" type="text" inputmode="numeric" maxlength="9" pattern="[0-9]{9}" data-validation="phone">
                         </div>
 
                         <div class="field full-width">
                             <label for="apoderado-lugar">Lugar de procedencia</label>
-                            <input id="apoderado-lugar" type="text" maxlength="120" required>
+                            <input id="apoderado-lugar" type="text" maxlength="120" pattern="[^0-9]+" data-validation="letters">
                         </div>
                     </div>
 
@@ -109,7 +107,7 @@
                     return;
                 }
 
-                if (!/^[0-9]{9}$/.test(celular)) {
+                if (celular && !/^[0-9]{9}$/.test(celular)) {
                     mostrarToast('El celular debe tener 9 dígitos.', 'error');
                     return;
                 }

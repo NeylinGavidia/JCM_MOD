@@ -13,24 +13,23 @@
 <body data-page="login" class="login-fondo">
     <main class="login">
         <div class="login-cabecera">
-            <div class="logo"><span class="material-symbols-outlined">school</span></div>
+            <div class="logo"><img src="Imagenes/insignia.png" alt="Insignia institucional"></div>
             <div><h1>I.E. "José Carlos Mariátegui"</h1><small>Conchán • Sistema de matrícula y trámites</small></div>
         </div>
         <div class="login-cuerpo">
-            <h2>Ingreso de la dirección</h2>
-            <p>Acceso exclusivo para la directora de la institución.</p>
+            <p>Acceso exclusivo para la dirección de la institución.</p>
             <div class="login-msg" id="login-msg" role="alert" hidden>
                 <span class="material-symbols-outlined">error</span><span id="login-msg-texto"></span>
             </div>
             <form id="form-login" novalidate>
                 <div class="campo">
                     <label for="usuario">Usuario</label>
-                    <input id="usuario" autocomplete="username" autocapitalize="none">
+                    <input id="usuario" autocomplete="username" autocapitalize="none" required>
                 </div>
                 <div class="campo">
                     <label for="clave">Contraseña</label>
                     <div class="clave-caja">
-                        <input id="clave" type="password" autocomplete="current-password">
+                        <input id="clave" type="password" autocomplete="current-password" required>
                         <button type="button" id="ver-clave" aria-label="Mostrar contraseña"><span class="material-symbols-outlined">visibility</span></button>
                     </div>
                 </div>

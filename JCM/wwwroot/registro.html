@@ -1,95 +1,77 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <title>Registrar Nuevo Documento</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Plus+Jakarta+Sans:wght@600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/style.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registrar documento - Mesa de Partes</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet">
+    <link rel="stylesheet" href="css/variables.css">
+    <link rel="stylesheet" href="css/layout.css">
 </head>
-<body>
-  <div class="main-container">
-    <aside class="sidebar">
-      <div class="brand">
-        <span style="font-size: 24px;">🏫</span>
-        <div>
-          <div class="brand-title">I.E. José Carlos Mariátegui</div>
-          <div class="brand-sub">Conchán - Chota</div>
-        </div>
-      </div>
-      <nav>
-        <a href="principal.html" class="nav-item">🏠 Inicio</a>
-        <a href="matricula.html" class="nav-item">📝 Matrícula</a>
-        <a href="bandeja.html" class="nav-item active">📂 Mesa de Partes</a>
-      </nav>
-    </aside>
+<body data-page="tramites">
+    <main class="content" id="contenido">
+        <div class="page-shell">
+            <div class="module-title-row">
+                <div class="module-copy">
+                    <h2>Registrar nuevo documento</h2>
+                    <p>Completa los datos del remitente y del documento para generar su expediente.</p>
+                </div>
+            </div>
+            <div class="module-actions">
+                <a class="btn btn-sec" href="tramites.html"><span class="material-symbols-outlined">arrow_back</span>Volver a trámites</a>
+            </div>
 
-    <main class="content-area">
-      <div class="module-header">
-        <div>
-          <h1>Registro de Nuevo Documento</h1>
-          <p>Complete los datos para generar el expediente y registrar la recepción.</p>
+            <form id="formRegistro" class="form-section" novalidate>
+                <div class="form-grid">
+                    <section>
+                        <h3 class="form-section-title">Datos del remitente</h3>
+                        <label class="field" for="nombreRemitente">Nombres y apellidos *
+                            <input type="text" class="form-control" id="nombreRemitente" maxlength="80" data-validation="letters" required autocomplete="name">
+                        </label>
+                        <label class="field" for="dniRemitente">DNI *
+                            <input type="text" class="form-control" id="dniRemitente" inputmode="numeric" pattern="[0-9]{8}" maxlength="8" data-validation="dni" required>
+                        </label>
+                        <label class="field" for="correoRemitente">Correo electrónico *
+                            <input type="email" class="form-control" id="correoRemitente" maxlength="120" required autocomplete="email">
+                        </label>
+                    </section>
+                    <section>
+                        <h3 class="form-section-title">Datos del documento</h3>
+                        <label class="field" for="tipoDocumento">Tipo de documento *
+                            <select class="form-control" id="tipoDocumento" required>
+                                <option value="">Seleccione...</option>
+                                <option>Solicitud</option>
+                                <option>Certificado</option>
+                                <option>Constancia</option>
+                                <option>Oficio</option>
+                                <option>Informe</option>
+                                <option>Otro</option>
+                            </select>
+                        </label>
+                        <label class="field" for="asunto">Asunto *
+                            <input type="text" class="form-control" id="asunto" maxlength="120" required>
+                        </label>
+                        <label class="field" for="folios">Número de folios *
+                            <input type="number" class="form-control" id="folios" min="1" max="500" value="1" required>
+                        </label>
+                    </section>
+                    <section class="full-width">
+                        <label class="field" for="archivoAdjunto">Archivo adjunto *
+                            <input type="file" class="form-control" id="archivoAdjunto" accept=".pdf,.jpg,.jpeg,.png" required>
+                            <small class="field-help">PDF, JPG o PNG, máximo 5 MB. Se registra el nombre del archivo en esta demostración local.</small>
+                        </label>
+                    </section>
+                </div>
+                <div class="form-actions">
+                    <a class="btn btn-sec" href="tramites.html">Cancelar</a>
+                    <button type="submit" class="btn btn-pri">Registrar y generar expediente</button>
+                </div>
+            </form>
         </div>
-        <a href="bandeja.html" class="btn-secondary" style="text-decoration: none;">← Volver</a>
-      </div>
-
-      <form id="formRegistro">
-        <div class="form-grid">
-          <div class="form-section">
-            <div class="form-section-title">👤 Datos del Remitente</div>
-            <div class="form-group">
-              <label>Nombres y Apellidos <span class="required">*</span></label>
-              <input type="text" class="form-control" id="nombreRemitente" placeholder="Ej. Manuel Humberto Díaz Tapia" required>
-            </div>
-            <div class="form-group">
-              <label>DNI <span class="required">*</span></label>
-              <input type="text" class="form-control" id="dniRemitente" placeholder="8 dígitos" maxlength="8" required>
-              <div class="error-message">El DNI debe tener exactamente 8 dígitos numéricos.</div>
-            </div>
-            <div class="form-group">
-              <label>Correo Electrónico</label>
-              <input type="email" class="form-control" id="correoRemitente" placeholder="ejemplo@correo.com">
-              <div class="error-message">Ingrese un correo válido.</div>
-            </div>
-          </div>
-
-          <div class="form-section">
-            <div class="form-section-title">📄 Datos del Documento</div>
-            <div class="form-group">
-              <label>Tipo de Documento <span class="required">*</span></label>
-              <select class="form-control" required>
-                <option value="">Seleccione...</option>
-                <option>Informe</option>
-                <option>Oficio</option>
-                <option>Solicitud</option>
-              </select>
-            </div>
-            <div class="form-group">
-              <label>Asunto <span class="required">*</span></label>
-              <input type="text" class="form-control" id="asunto" placeholder="Descripción breve" required>
-            </div>
-            <div class="form-group">
-              <label>Número de Folios <span class="required">*</span></label>
-              <input type="number" class="form-control" id="folios" placeholder="Ej. 4" min="1" max="500" required>
-              <div class="error-message">Ingrese un número de folios válido (1-500).</div>
-            </div>
-          </div>
-        </div>
-
-        <div class="form-section">
-          <div class="form-section-title">📎 Archivo Adjunto (Opcional)</div>
-          <div class="upload-area" onclick="document.getElementById('archivoAdjunto').click()">
-            <p>Haga clic para seleccionar el archivo PDF/JPG/PNG (Máx. 5MB)</p>
-            <input type="file" id="archivoAdjunto" accept=".pdf,.jpg,.jpeg,.png" style="display: none;">
-          </div>
-        </div>
-
-        <div class="form-actions">
-          <button type="button" class="btn-secondary" onclick="window.location.href='bandeja.html'">Cancelar</button>
-          <button type="submit" class="btn-primary">Registrar y Generar Expediente</button>
-        </div>
-      </form>
     </main>
-  </div>
-  <script src="js/registro.js"></script>
+    <script src="js/app.js"></script>
+    <script src="js/registro.js"></script>
 </body>
 </html>

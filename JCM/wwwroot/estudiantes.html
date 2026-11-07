@@ -13,15 +13,13 @@
 <body data-page="matricula">
     <main class="content" id="contenido">
         <div class="page-shell">
-            <div class="module-header-line">GESTIÓN ACADÉMICA • Año 2026 • Ordinario</div>
-
             <div class="module-title-row">
                 <div class="module-copy">
                     <h2>Ficha de Estudiantes</h2>
-                    <p>Registro detallado de estudiantes matriculados, grados, asistencia y estado académico en el proceso de inscripción escolar.</p>
+                    <p>Consulta, edita y administra la información de estudiantes y sus matrículas.</p>
                 </div>
                 <div class="header-actions">
-                    <a class="btn btn-sec" href="reportes.html"><span class="material-symbols-outlined">download</span>Exportar reporte</a>
+                    <a class="btn btn-sec" href="reportes.html"><span class="material-symbols-outlined">download</span>Exportar</a>
                     <a class="btn btn-pri" href="matricula.html"><span class="material-symbols-outlined">arrow_back</span>Volver al padrón</a>
                 </div>
             </div>
@@ -121,6 +119,7 @@
                             <th>Año lectivo</th>
                             <th>Estado</th>
                             <th>Observación</th>
+                            <th>Acciones</th>
                         </tr>
                     </thead>
                     <tbody id="tbody-matriculas-ficha">
@@ -133,10 +132,10 @@
     <script>
         (function () {
             const seedStudents = [
-                { id: 'E0001', nombre: 'Diego', apellidoPaterno: 'Tantaleán', apellidoMaterno: 'Campos', dni: '73428190', fechaNacimiento: '2015-06-12', edad: 10, sexo: 'Masculino', historialEnfermedades: 'Ninguna', celular: '976432109', lugarProcedencia: 'Conchán', codigoModular: 'CM-001' },
-                { id: 'E0002', nombre: 'Lucas', apellidoPaterno: 'Bustamante', apellidoMaterno: 'Rojas', dni: '71984322', fechaNacimiento: '2014-11-18', edad: 11, sexo: 'Masculino', historialEnfermedades: 'Ninguna', celular: '942118732', lugarProcedencia: 'Conchán', codigoModular: 'CM-002' },
-                { id: 'E0003', nombre: 'Juan Esteban', apellidoPaterno: 'Vásquez', apellidoMaterno: 'Su', dni: '78811294', fechaNacimiento: '2012-03-11', edad: 14, sexo: 'Masculino', historialEnfermedades: 'Asma leve', celular: '979554210', lugarProcedencia: 'Caserío Conchán', codigoModular: 'CM-003' },
-                { id: 'E0004', nombre: 'Andrea', apellidoPaterno: 'Díaz', apellidoMaterno: 'Ramirez', dni: '74569831', fechaNacimiento: '2013-07-09', edad: 12, sexo: 'Femenino', historialEnfermedades: 'Ninguna', celular: '913220981', lugarProcedencia: 'Conchán', codigoModular: 'CM-004' }
+                { id: 'E0001', nombre: 'Diego', apellidoPaterno: 'Tantaleán', apellidoMaterno: 'Campos', dni: '73428190', fechaNacimiento: '2015-06-12', edad: 10, sexo: 'Masculino', historialEnfermedades: 'Ninguna', celular: '976432109', lugarProcedencia: 'Conchán', codigoModular: '0000001', grado: '1°', seccion: 'A' },
+                { id: 'E0002', nombre: 'Lucas', apellidoPaterno: 'Bustamante', apellidoMaterno: 'Rojas', dni: '71984322', fechaNacimiento: '2014-11-18', edad: 11, sexo: 'Masculino', historialEnfermedades: 'Ninguna', celular: '942118732', lugarProcedencia: 'Conchán', codigoModular: '0000002', grado: '1°', seccion: 'A' },
+                { id: 'E0003', nombre: 'Juan Esteban', apellidoPaterno: 'Vásquez', apellidoMaterno: 'Su', dni: '78811294', fechaNacimiento: '2012-03-11', edad: 14, sexo: 'Masculino', historialEnfermedades: 'Asma leve', celular: '979554210', lugarProcedencia: 'Caserío Conchán', codigoModular: '0000003', grado: '2°', seccion: 'A' },
+                { id: 'E0004', nombre: 'Andrea', apellidoPaterno: 'Díaz', apellidoMaterno: 'Ramirez', dni: '74569831', fechaNacimiento: '2013-07-09', edad: 12, sexo: 'Femenino', historialEnfermedades: 'Ninguna', celular: '913220981', lugarProcedencia: 'Conchán', codigoModular: '0000004', grado: '3°', seccion: 'A' }
             ];
             const seedMatriculas = [
                 { idMatricula: 'M0001-2026', estudianteId: 'E0001', fechaMatricula: '2026-01-14', anioLectivo: '2026', estado: 'Finalizado', observacion: 'Ingreso regular con ficha completa.' },
@@ -147,7 +146,7 @@
 
             function getList(key, fallback) {
                 const saved = JSON.parse(localStorage.getItem(key) || 'null');
-                if (Array.isArray(saved) && saved.length) {
+                if (Array.isArray(saved)) {
                     return saved;
                 }
                 localStorage.setItem(key, JSON.stringify(fallback));
@@ -160,7 +159,7 @@
 
             function getMatriculas() {
                 const saved = JSON.parse(localStorage.getItem('jcm_demo_matriculas') || 'null');
-                if (Array.isArray(saved) && saved.length) return saved;
+                if (Array.isArray(saved)) return saved;
                 localStorage.setItem('jcm_demo_matriculas', JSON.stringify(seedMatriculas));
                 return seedMatriculas;
             }
@@ -183,12 +182,28 @@
                 const estudiantes = getList('jcm_demo_estudiantes', seedStudents);
                 const tbody = document.getElementById('tbody-estudiantes-ficha');
                 if (!tbody) return;
+                let actualizarAsignaciones = false;
                 tbody.innerHTML = estudiantes.map((est, index) => {
-                    const grado = ['1°', '2°', '3°', '4°', '5°'][index % 5];
-                    const seccion = ['A', 'B', 'C'][index % 3];
+                    if (!est.grado) {
+                        est.grado = ['1°', '1°', '2°', '3°', '5°'][index % 5];
+                        actualizarAsignaciones = true;
+                    }
+                    if (est.grado !== '2°' && est.seccion !== 'A') {
+                        est.seccion = 'A';
+                        actualizarAsignaciones = true;
+                    } else if (est.grado === '2°' && !['A', 'B'].includes(est.seccion)) {
+                        est.seccion = 'A';
+                        actualizarAsignaciones = true;
+                    }
+                    if (!est.seccion) {
+                        est.seccion = 'A';
+                        actualizarAsignaciones = true;
+                    }
+                    const grado = est.grado;
+                    const seccion = est.seccion;
                     const estado = index % 4 === 0 ? '<span class="badge badge-warn">Pendiente</span>' : '<span class="badge badge-success">Activo</span>';
                     return `
-                        <tr>
+                        <tr data-id="${esc(est.id)}">
                             <td>${est.id}</td>
                             <td>${nombreCompletoPersona(est)}</td>
                             <td>${est.dni}</td>
@@ -196,10 +211,11 @@
                             <td>${seccion}</td>
                             <td>${est.lugarProcedencia}</td>
                             <td>${estado}</td>
-                            <td class="table-actions"><span class="material-symbols-outlined">visibility</span><span class="material-symbols-outlined">edit</span></td>
+                            <td>${accionesCrudLista(est.id)}</td>
                         </tr>
                     `;
                 }).join('');
+                if (actualizarAsignaciones) localStorage.setItem('jcm_demo_estudiantes', JSON.stringify(estudiantes));
             }
 
             function renderMatriculasFicha() {
@@ -211,7 +227,7 @@
                 tbody.innerHTML = matriculas.map((matricula) => {
                     const estudiante = estudiantes.find((item) => item.id === matricula.estudianteId) || { nombre: 'Estudiante', apellidoPaterno: '', apellidoMaterno: '' };
                     return `
-                        <tr>
+                        <tr data-id="${esc(matricula.idMatricula)}">
                             <td>${matricula.idMatricula}</td>
                             <td>${matricula.estudianteId}</td>
                             <td>${nombreCompletoPersona(estudiante)}</td>
@@ -219,6 +235,7 @@
                             <td>${matricula.anioLectivo}</td>
                             <td>${badgeEstado(matricula.estado)}</td>
                             <td>${matricula.observacion}</td>
+                            <td>${accionesCrudLista(matricula.idMatricula)}</td>
                         </tr>
                     `;
                 }).join('');
@@ -226,6 +243,44 @@
 
             renderFichaEstudiantes();
             renderMatriculasFicha();
+            habilitarCrudLista({
+                tbodyId: 'tbody-estudiantes-ficha',
+                clave: 'jcm_demo_estudiantes',
+                campos: [
+                    { key: 'nombre', label: 'Nombre', validation: 'letters' },
+                    { key: 'apellidoPaterno', label: 'Apellido paterno', validation: 'letters' },
+                    { key: 'apellidoMaterno', label: 'Apellido materno', validation: 'letters' },
+                    { key: 'dni', label: 'DNI', validation: 'dni' },
+                    { key: 'fechaNacimiento', label: 'Fecha de nacimiento', type: 'date' },
+                    { key: 'sexo', label: 'Sexo', options: ['Masculino', 'Femenino'] },
+                    { key: 'grado', label: 'Grado', options: ['1°', '2°', '3°', '4°', '5°'] },
+                    { key: 'seccion', label: 'Sección', dependsOn: 'grado', optionsByValue: { '2°': ['A', 'B'], default: ['A'] } },
+                    { key: 'historialEnfermedades', label: 'Historial de enfermedades', optional: true, multiline: true },
+                    { key: 'celular', label: 'Celular', validation: 'phone', optional: true },
+                    { key: 'lugarProcedencia', label: 'Lugar de procedencia', validation: 'letters', optional: true },
+                    { key: 'codigoModular', label: 'Código modular' }
+                ],
+                alCambiar: () => { renderFichaEstudiantes(); renderMatriculasFicha(); },
+                alEliminar: (estudiante) => {
+                    ['jcm_demo_matriculas', 'jcm_demo_asignaciones'].forEach((clave) => {
+                        const registros = JSON.parse(localStorage.getItem(clave) || '[]');
+                        localStorage.setItem(clave, JSON.stringify(registros.filter((registro) => registro.estudianteId !== estudiante.id)));
+                    });
+                }
+            });
+            habilitarCrudLista({
+                tbodyId: 'tbody-matriculas-ficha',
+                clave: 'jcm_demo_matriculas',
+                idField: 'idMatricula',
+                campos: [
+                    { key: 'estudianteId', label: 'ID del estudiante' },
+                    { key: 'fechaMatricula', label: 'Fecha de matrícula', type: 'date' },
+                    { key: 'anioLectivo', label: 'Año lectivo', validation: 'digits' },
+                    { key: 'estado', label: 'Estado', options: ['Pendiente', 'Finalizado', 'Ratificado', 'Cancelado', 'Traslado', 'Retirado', 'Suspendido'] },
+                    { key: 'observacion', label: 'Observación', multiline: true }
+                ],
+                alCambiar: renderMatriculasFicha
+            });
         })();
     </script>
 </body>

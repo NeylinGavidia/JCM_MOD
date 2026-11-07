@@ -1,123 +1,13 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <title>Mesa de Partes - I.E. José Carlos Mariátegui</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Plus+Jakarta+Sans:wght@600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/style.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="refresh" content="0; url=tramites.html">
+    <title>Mesa de Partes y Trámites</title>
 </head>
 <body>
-  <div class="main-container">
-    <aside class="sidebar">
-      <div class="brand">
-        <span style="font-size: 24px;">🏫</span>
-        <div>
-          <div class="brand-title">I.E. José Carlos Mariátegui</div>
-          <div class="brand-sub">Conchán - Chota</div>
-        </div>
-      </div>
-      <nav>
-        <a href="principal.html" class="nav-item">🏠 Inicio</a>
-        <a href="matricula.html" class="nav-item">📝 Matrícula</a>
-        <a href="bandeja.html" class="nav-item active">📂 Mesa de Partes</a>
-      </nav>
-    </aside>
-
-    <main class="content-area">
-      <div class="module-header">
-        <div>
-          <h1>Mesa de Partes y Trámites</h1>
-          <p>Bandeja de recepción y control de documentos de la institución educativa.</p>
-        </div>
-        <a href="registro.html" class="btn-primary" style="text-decoration: none;">+ Nuevo documento</a>
-      </div>
-
-      <div class="kpi-grid">
-        <div class="kpi-card">
-          <div class="kpi-label">Total Documentos</div>
-          <div class="kpi-value">48</div>
-          <div class="kpi-sub">Periodo 2026</div>
-        </div>
-        <div class="kpi-card">
-          <div class="kpi-label">Registrados</div>
-          <div class="kpi-value" style="color: #1d4ed8;">14</div>
-          <div class="kpi-sub">Pendientes de revisión</div>
-        </div>
-        <div class="kpi-card">
-          <div class="kpi-label">En Revisión</div>
-          <div class="kpi-value" style="color: #b45309;">9</div>
-          <div class="kpi-sub">Derivados a área</div>
-        </div>
-        <div class="kpi-card">
-          <div class="kpi-label">Atendidos</div>
-          <div class="kpi-value" style="color: #15803d;">25</div>
-          <div class="kpi-sub">Con resolución</div>
-        </div>
-      </div>
-
-      <div class="table-container">
-        <div class="table-toolbar">
-          <div class="search-box">
-            <input type="text" placeholder="Buscar por código, remitente o DNI...">
-          </div>
-          <select class="filter-select">
-            <option>Todos los tipos</option>
-            <option>Informe</option>
-            <option>Oficio</option>
-            <option>Solicitud</option>
-          </select>
-          <select class="filter-select">
-            <option>Todos los estados</option>
-            <option>Registrado</option>
-            <option>En Revisión</option>
-            <option>Atendido</option>
-            <option>Observado</option>
-          </select>
-        </div>
-        <table>
-          <thead>
-            <tr>
-              <th>Código</th>
-              <th>Remitente</th>
-              <th>Tipo Doc.</th>
-              <th>Asunto</th>
-              <th>Fecha Recepción</th>
-              <th>Estado</th>
-              <th>Acciones</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td><strong>EXP-2026-0049</strong></td>
-              <td>Prof. Manuel Díaz Tapia</td>
-              <td>Informe</td>
-              <td>Informe pedagógico diagnóstico del área de Comunicación</td>
-              <td>12/03/2026</td>
-              <td><span class="status-badge status-registrado">● Registrado</span></td>
-              <td><a href="#" style="color: var(--primary); font-weight: 600; text-decoration: none;">Ver detalle</a></td>
-            </tr>
-            <tr>
-              <td><strong>EXP-2026-0048</strong></td>
-              <td>UGEL Chota</td>
-              <td>Oficio</td>
-              <td>Directiva de monitoreo y consolidación de matrícula</td>
-              <td>11/03/2026</td>
-              <td><span class="status-badge status-revision">● En Revisión</span></td>
-              <td><a href="#" style="color: var(--primary); font-weight: 600; text-decoration: none;">Ver detalle</a></td>
-            </tr>
-            <tr>
-              <td><strong>EXP-2026-0047</strong></td>
-              <td>Carmen Rojas Saldaña</td>
-              <td>Solicitud</td>
-              <td>Solicitud de constancia de vacante y matrícula</td>
-              <td>10/03/2026</td>
-              <td><span class="status-badge status-atendido">● Atendido</span></td>
-              <td><a href="#" style="color: var(--primary); font-weight: 600; text-decoration: none;">Ver detalle</a></td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </main>
-  </div>
+    <p>La bandeja ahora forma parte del módulo de <a href="tramites.html">Mesa de Partes y Trámites</a>.</p>
+    <script>location.replace('tramites.html' + location.search);</script>
 </body>
 </html>

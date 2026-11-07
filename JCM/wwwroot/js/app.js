@@ -24,7 +24,6 @@ const MENU = [
 const PROXIMAMENTE = {
     matricula: { titulo: 'Matrícula y Estudiantes', texto: 'Aquí se registrará la matrícula: validación de DNI, vacante en la sección y apoderado.' },
     apoderados: { titulo: 'Registro de Apoderados', texto: 'Aquí se registrarán los apoderados y se vincularán a sus estudiantes.' },
-    tramites: { titulo: 'Mesa de Partes y Trámites', texto: 'Aquí se verá la bandeja de expedientes: recepción, derivación y atención. Por ahora puedes recepcionar un documento desde el panel principal.' },
     reportes: { titulo: 'Reportes y Estadísticas', texto: 'Aquí se generará el padrón de matrícula y los reportes de aforo.' }
 };
 
@@ -114,6 +113,210 @@ function confirmar({ titulo, mensaje, textoOk = 'Aceptar', peligro = false }) {
     });
 }
 
+function accionesCrudLista(id) {
+    const registroId = esc(id);
+    return '<div class="table-actions">' +
+        '<button type="button" class="icon-btn btn-crud-editar" data-crud-editar="' + registroId + '" aria-label="Editar registro"><span class="material-symbols-outlined">edit</span></button>' +
+        '<button type="button" class="icon-btn btn-crud-eliminar" data-crud-eliminar="' + registroId + '" aria-label="Eliminar registro"><span class="material-symbols-outlined">delete</span></button>' +
+        '</div>';
+}
+
+function habilitarCrudLista({ tbodyId, clave, idField = 'id', campos, alCambiar, alEliminar, leerRegistros, guardarRegistros }) {
+    const tbody = document.getElementById(tbodyId);
+    if (!tbody) return;
+
+    function leerLista() {
+        const lista = leerRegistros ? leerRegistros() : JSON.parse(localStorage.getItem(clave) || '[]');
+        if (!Array.isArray(lista)) throw new Error('El formato de la lista guardada no es válido.');
+        return lista;
+    }
+
+    function guardarLista(lista) {
+        try {
+            if (guardarRegistros) {
+                if (!guardarRegistros(lista)) return false;
+            } else {
+                localStorage.setItem(clave, JSON.stringify(lista));
+            }
+            alCambiar?.();
+            return true;
+        } catch (error) {
+            mostrarToast('No se pudo guardar el cambio en este navegador.', 'error');
+            return false;
+        }
+    }
+
+    function editar(registro) {
+        const dialogo = document.createElement('dialog');
+        dialogo.className = 'modal';
+        const form = document.createElement('form');
+        form.noValidate = true;
+        const titulo = document.createElement('h3');
+        titulo.textContent = 'Editar registro';
+        form.appendChild(titulo);
+        const grid = document.createElement('div');
+        grid.className = 'form-grid';
+
+        campos.forEach((campo) => {
+            const label = document.createElement('label');
+            label.className = 'field' + (campo.multiline ? ' full-width' : '');
+            label.textContent = campo.label;
+            const control = campo.multiline ? document.createElement('textarea') : document.createElement(campo.options || campo.optionsByValue ? 'select' : 'input');
+            if (campo.multiline) control.rows = 3;
+            if (campo.options || campo.optionsByValue) {
+                const opciones = campo.optionsByValue
+                    ? (campo.optionsByValue[registro[campo.dependsOn]] || campo.optionsByValue.default || [])
+                    : campo.options;
+                opciones.forEach((opcion) => {
+                    const option = document.createElement('option');
+                    option.value = opcion;
+                    option.textContent = opcion;
+                    control.appendChild(option);
+                });
+            } else if (!campo.multiline) {
+                control.type = campo.type || 'text';
+            }
+            control.name = campo.key;
+            const valor = registro[campo.key] ?? '';
+            control.value = campo.type === 'date' ? String(valor).slice(0, 10) : valor;
+            control.required = !campo.optional;
+            if (campo.min !== undefined) control.min = String(campo.min);
+            if (campo.max !== undefined) control.max = String(campo.max);
+            if (campo.validation) {
+                control.dataset.validation = campo.validation;
+                if (campo.validation === 'letters') control.pattern = '[^0-9]+';
+                if (campo.validation === 'dni') {
+                    control.inputMode = 'numeric';
+                    control.maxLength = 8;
+                    control.pattern = '[0-9]{8}';
+                }
+                if (campo.validation === 'phone') {
+                    control.inputMode = 'numeric';
+                    control.maxLength = 9;
+                    control.pattern = '[0-9]{9}';
+                }
+            }
+            label.appendChild(control);
+            grid.appendChild(label);
+        });
+
+        campos.filter((campo) => campo.optionsByValue).forEach((campo) => {
+            const dependiente = grid.querySelector(`[name="${campo.key}"]`);
+            const principal = grid.querySelector(`[name="${campo.dependsOn}"]`);
+            if (!(dependiente instanceof HTMLSelectElement) || !(principal instanceof HTMLSelectElement)) return;
+            principal.addEventListener('change', () => {
+                const opciones = campo.optionsByValue[principal.value] || campo.optionsByValue.default || [];
+                const valorActual = dependiente.value;
+                dependiente.replaceChildren(...opciones.map((opcion) => {
+                    const option = document.createElement('option');
+                    option.value = opcion;
+                    option.textContent = opcion;
+                    return option;
+                }));
+                dependiente.value = opciones.includes(valorActual) ? valorActual : opciones[0] || '';
+            });
+        });
+
+        const actions = document.createElement('div');
+        actions.className = 'modal-acciones';
+        actions.innerHTML = '<button type="button" class="btn btn-sec" data-cancelar>Cancelar</button>' +
+            '<button type="submit" class="btn btn-pri">Guardar cambios</button>';
+        form.append(grid, actions);
+        dialogo.appendChild(form);
+        document.body.appendChild(dialogo);
+        dialogo.querySelector('[data-cancelar]').addEventListener('click', () => dialogo.close());
+        dialogo.addEventListener('close', () => dialogo.remove(), { once: true });
+        form.addEventListener('submit', (event) => {
+            event.preventDefault();
+            if (!form.checkValidity()) {
+                mostrarToast('Completa los campos obligatorios y corrige los datos inválidos.', 'warn');
+                form.reportValidity();
+                return;
+            }
+            const cambios = Object.fromEntries(new FormData(form).entries());
+            try {
+                const lista = leerLista();
+                const indice = lista.findIndex((item) => item[idField] === registro[idField]);
+                if (indice < 0) {
+                    mostrarToast('No se encontró el registro que deseas editar.', 'error');
+                    dialogo.close();
+                    return;
+                }
+                lista[indice] = { ...lista[indice], ...cambios };
+                if (guardarLista(lista)) {
+                    dialogo.close();
+                    mostrarToast('Registro actualizado correctamente.', 'ok');
+                }
+            } catch (error) {
+                mostrarToast('No se pudo actualizar el registro: ' + error.message, 'error');
+            }
+        });
+        dialogo.showModal();
+    }
+
+    tbody.addEventListener('click', async (event) => {
+        const botonEditar = event.target.closest('[data-crud-editar]');
+        const botonEliminar = event.target.closest('[data-crud-eliminar]');
+        if (!botonEditar && !botonEliminar) return;
+        const id = (botonEditar || botonEliminar).dataset.crudEditar || (botonEditar || botonEliminar).dataset.crudEliminar;
+        try {
+            const lista = leerLista();
+            const registro = lista.find((item) => String(item[idField]) === id);
+            if (!registro) {
+                mostrarToast('No se encontró el registro seleccionado.', 'error');
+                return;
+            }
+            if (botonEditar) {
+                editar(registro);
+                return;
+            }
+            const ok = await confirmar({
+                titulo: '¿Eliminar este registro?',
+                mensaje: 'Esta acción no se puede deshacer.',
+                textoOk: 'Eliminar',
+                peligro: true
+            });
+            if (ok) alEliminar?.(registro);
+            if (ok && guardarLista(lista.filter((item) => String(item[idField]) !== id))) {
+                mostrarToast('Registro eliminado correctamente.', 'ok');
+            }
+        } catch (error) {
+            mostrarToast('No se pudo procesar el registro: ' + error.message, 'error');
+        }
+    });
+}
+
+function configurarValidacionGlobal() {
+    document.addEventListener('input', (event) => {
+        const control = event.target;
+        if (!(control instanceof HTMLInputElement || control instanceof HTMLTextAreaElement)) return;
+        control.setCustomValidity('');
+        const tipo = control.dataset.validation;
+        if (tipo === 'letters') control.value = control.value.replace(/[0-9]/g, '');
+        if (tipo === 'dni' || tipo === 'phone' || tipo === 'digits') control.value = control.value.replace(/\D/g, '');
+    }, true);
+
+    document.addEventListener('submit', (event) => {
+        const form = event.target;
+        if (!(form instanceof HTMLFormElement)) return;
+        const requiredControls = Array.from(form.querySelectorAll('[required]'));
+        requiredControls.forEach((control) => {
+            if (control instanceof HTMLInputElement || control instanceof HTMLTextAreaElement) control.setCustomValidity('');
+        });
+        const requiredTextEmpty = requiredControls.find((control) => {
+            if (control instanceof HTMLTextAreaElement) return !control.value.trim();
+            if (!(control instanceof HTMLInputElement)) return false;
+            return ['text', 'email', 'password', 'search', 'url', 'tel'].includes(control.type) && !control.value.trim();
+        });
+        if (requiredTextEmpty) requiredTextEmpty.setCustomValidity('Completa este campo obligatorio.');
+        if (form.checkValidity()) return;
+        event.preventDefault();
+        event.stopImmediatePropagation();
+        mostrarToast('Completa los campos obligatorios y corrige los datos inválidos.', 'warn');
+        form.reportValidity();
+    }, true);
+}
+
 async function cerrarSesion() {
     const ok = await confirmar({
         titulo: '¿Cerrar la sesión?',
@@ -133,7 +336,7 @@ function montarEstructura(pagina) {
     encabezado.innerHTML =
         '<div class="topbar-izq">' +
         '<button class="icon-btn menu-toggle" type="button" aria-label="Abrir o cerrar el menú"><span class="material-symbols-outlined">menu</span></button>' +
-        '<div class="logo"><span class="material-symbols-outlined">school</span></div>' +
+        '<div class="logo"><img src="Imagenes/insignia.png" alt="Insignia institucional"></div>' +
         '<div><h1>' + esc(APP.institucion) + '<span class="insignia">Demo</span></h1><small>Módulo de ' + esc(APP.cargo) + ' • Gestión 2026</small></div>' +
         '</div>' +
         '<div class="topbar-der">' +
@@ -179,6 +382,7 @@ function montarEstructura(pagina) {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
+    configurarValidacionGlobal();
     const pagina = document.body.dataset.page;
     if (!pagina || pagina === 'login') return;
     if (!sesionActiva()) { location.replace('index.html'); return; }

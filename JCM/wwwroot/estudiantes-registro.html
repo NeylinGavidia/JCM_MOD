@@ -13,12 +13,10 @@
 <body data-page="matricula">
     <main class="content" id="contenido">
         <div class="page-shell">
-            <div class="module-header-line">MATRÍCULA • Registro de estudiantes</div>
-
             <div class="module-title-row">
                 <div class="module-copy">
                     <h2>Registrar nuevo estudiante</h2>
-                    <p>Complete la información del estudiante y genere automáticamente su código institucional.</p>
+                    <p>Completa los datos del estudiante y define el grado y sección para su matrícula.</p>
                 </div>
                 <div class="header-actions">
                     <a class="btn btn-sec" href="matricula.html"><span class="material-symbols-outlined">arrow_back</span>Volver al padrón</a>
@@ -35,22 +33,28 @@
 
                         <div class="field">
                             <label for="nombre">Nombre</label>
-                            <input id="nombre" type="text" maxlength="80" required>
+                            <input id="nombre" type="text" maxlength="80" pattern="[^0-9]+" data-validation="letters" required>
                         </div>
 
                         <div class="field">
                             <label for="apellido-paterno">Apellido paterno</label>
-                            <input id="apellido-paterno" type="text" maxlength="80" required>
+                            <input id="apellido-paterno" type="text" maxlength="80" pattern="[^0-9]+" data-validation="letters" required>
                         </div>
 
                         <div class="field">
                             <label for="apellido-materno">Apellido materno</label>
-                            <input id="apellido-materno" type="text" maxlength="80" required>
+                            <input id="apellido-materno" type="text" maxlength="80" pattern="[^0-9]+" data-validation="letters" required>
                         </div>
 
                         <div class="field">
                             <label for="dni">DNI</label>
-                            <input id="dni" type="text" inputmode="numeric" maxlength="8" required>
+                            <div class="field-control-row">
+                                <input id="dni" type="text" inputmode="numeric" maxlength="8" pattern="[0-9]{8}" data-validation="dni" required>
+                                <button type="button" class="btn btn-sec" id="btn-buscar-reniec">
+                                    <span class="material-symbols-outlined">manage_search</span>Buscar en RENIEC
+                                </button>
+                            </div>
+                            <small>Simulación local: usa uno de los DNI de demostración.</small>
                         </div>
 
                         <div class="field">
@@ -79,17 +83,41 @@
 
                         <div class="field">
                             <label for="celular">Celular</label>
-                            <input id="celular" type="text" inputmode="numeric" maxlength="9" required>
+                            <input id="celular" type="text" inputmode="numeric" maxlength="9" pattern="[0-9]{9}" data-validation="phone">
                         </div>
 
                         <div class="field">
                             <label for="lugar-procedencia">Lugar de procedencia</label>
-                            <input id="lugar-procedencia" type="text" maxlength="120" required>
+                            <input id="lugar-procedencia" type="text" maxlength="120" pattern="[^0-9]+" data-validation="letters">
                         </div>
 
                         <div class="field">
                             <label for="codigo-modular">Código modular</label>
-                            <input id="codigo-modular" type="text" maxlength="20" required>
+                            <input id="codigo-modular" type="text" required>
+                        </div>
+
+                        <div class="academic-section-title">
+                            <h3>Asignación académica</h3>
+                            <p>Selecciona el grado y la sección donde se matriculará el estudiante.</p>
+                        </div>
+
+                        <div class="field">
+                            <label for="grado">Grado</label>
+                            <select id="grado" required>
+                                <option value="">Seleccione un grado</option>
+                                <option value="1°">1°</option>
+                                <option value="2°">2°</option>
+                                <option value="3°">3°</option>
+                                <option value="4°">4°</option>
+                                <option value="5°">5°</option>
+                            </select>
+                        </div>
+
+                        <div class="field">
+                            <label for="seccion">Sección</label>
+                            <select id="seccion" required>
+                                <option value="A">A</option>
+                            </select>
                         </div>
                     </div>
 
@@ -135,10 +163,51 @@
             fn.addEventListener('change', () => {
                 edad.value = calcularEdad(fn.value);
             });
+
+            const grado = document.getElementById('grado');
+            const seccion = document.getElementById('seccion');
+            grado.addEventListener('change', () => {
+                const seccionAnterior = seccion.value;
+                const opciones = grado.value === '2°' ? ['A', 'B'] : ['A'];
+                seccion.replaceChildren(...opciones.map((opcion) => new Option(opcion, opcion)));
+                seccion.value = opciones.includes(seccionAnterior) ? seccionAnterior : 'A';
+            });
+        }
+
+        function buscarEnReniecSimulado() {
+            const dniInput = document.getElementById('dni');
+            const dni = dniInput.value.trim();
+            if (!/^[0-9]{8}$/.test(dni)) {
+                mostrarToast('Ingresa un DNI de 8 dígitos para realizar la búsqueda simulada.', 'warn');
+                dniInput.focus();
+                return;
+            }
+
+            const registrosDemo = {
+                '73428190': { nombre: 'Diego', apellidoPaterno: 'Tantaleán', apellidoMaterno: 'Campos', fechaNacimiento: '2015-06-12', sexo: 'Masculino' },
+                '71984322': { nombre: 'Lucas', apellidoPaterno: 'Bustamante', apellidoMaterno: 'Rojas', fechaNacimiento: '2014-11-18', sexo: 'Masculino' },
+                '78811294': { nombre: 'Juan Esteban', apellidoPaterno: 'Vásquez', apellidoMaterno: 'Su', fechaNacimiento: '2012-03-11', sexo: 'Masculino' },
+                '74569831': { nombre: 'Andrea', apellidoPaterno: 'Díaz', apellidoMaterno: 'Ramirez', fechaNacimiento: '2013-07-09', sexo: 'Femenino' }
+            };
+            const persona = registrosDemo[dni];
+            if (!persona) {
+                mostrarToast('No se encontró ese DNI en los datos de demostración de RENIEC.', 'warn');
+                return;
+            }
+
+            document.getElementById('nombre').value = persona.nombre;
+            document.getElementById('apellido-paterno').value = persona.apellidoPaterno;
+            document.getElementById('apellido-materno').value = persona.apellidoMaterno;
+            document.getElementById('fecha-nacimiento').value = persona.fechaNacimiento;
+            document.getElementById('edad').value = calcularEdad(persona.fechaNacimiento);
+            document.getElementById('sexo').value = persona.sexo;
+            mostrarToast('Búsqueda completada y datos autocompletados. Simulación local: no se consultó RENIEC.', 'ok');
         }
 
         document.addEventListener('DOMContentLoaded', () => {
             inicializarFormulario();
+
+            document.getElementById('btn-buscar-reniec').addEventListener('click', buscarEnReniecSimulado);
 
             const form = document.getElementById('form-estudiante');
             form.addEventListener('submit', (event) => {
@@ -151,8 +220,23 @@
                     return;
                 }
 
-                if (!/^[0-9]{9}$/.test(celular)) {
+                if (celular && !/^[0-9]{9}$/.test(celular)) {
                     mostrarToast('El celular debe tener 9 dígitos.', 'error');
+                    return;
+                }
+
+                const gradoSeleccionado = document.getElementById('grado').value;
+                const seccionSeleccionada = document.getElementById('seccion').value;
+                const datosInstitucionales = leerDatos();
+                const aforoSeccion = datosInstitucionales.aforo.find((item) =>
+                    item.seccion === `${gradoSeleccionado} ${seccionSeleccionada}`
+                );
+                if (!aforoSeccion) {
+                    mostrarToast('No se encontró la capacidad configurada para esta sección.', 'error');
+                    return;
+                }
+                if (Number(aforoSeccion.matriculados) >= Number(aforoSeccion.capacidad)) {
+                    mostrarToast(`La sección ${aforoSeccion.seccion} está llena. No se puede registrar otra matrícula.`, 'warn');
                     return;
                 }
 
@@ -168,12 +252,58 @@
                     historialEnfermedades: document.getElementById('historial-enfermedades').value.trim(),
                     celular,
                     lugarProcedencia: document.getElementById('lugar-procedencia').value.trim(),
-                    codigoModular: document.getElementById('codigo-modular').value.trim()
+                    codigoModular: document.getElementById('codigo-modular').value,
+                    grado: gradoSeleccionado,
+                    seccion: seccionSeleccionada,
+                    aforoContabilizado: true
                 };
 
                 const registros = JSON.parse(localStorage.getItem('jcm_demo_estudiantes') || '[]');
-                registros.push(estudiante);
-                localStorage.setItem('jcm_demo_estudiantes', JSON.stringify(registros));
+                const matriculas = JSON.parse(localStorage.getItem('jcm_demo_matriculas') || '[]');
+                if (!Array.isArray(registros) || !Array.isArray(matriculas)) {
+                    mostrarToast('No se pudieron cargar las listas de estudiantes y matrículas.', 'error');
+                    return;
+                }
+
+                const matriculaNumero = matriculas.reduce((max, matricula) => {
+                    const match = String(matricula.idMatricula || '').match(/^M(\d+)-/);
+                    return Math.max(max, match ? Number(match[1]) : 0);
+                }, 0) + 1;
+                const fechaActual = new Date();
+                const matricula = {
+                    idMatricula: `M${String(matriculaNumero).padStart(4, '0')}-${fechaActual.getFullYear()}`,
+                    estudianteId: estudiante.id,
+                    fechaMatricula: `${fechaActual.getFullYear()}-${String(fechaActual.getMonth() + 1).padStart(2, '0')}-${String(fechaActual.getDate()).padStart(2, '0')}`,
+                    anioLectivo: String(fechaActual.getFullYear()),
+                    estado: 'Pendiente',
+                    observacion: ''
+                };
+                const estudiantesActualizados = [...registros, estudiante];
+                const matriculasActualizadas = [...matriculas, matricula];
+                const aforoAnterior = Number(aforoSeccion.matriculados);
+                aforoSeccion.matriculados = aforoAnterior + 1;
+                const estudiantesGuardados = localStorage.getItem('jcm_demo_estudiantes');
+                const matriculasGuardadas = localStorage.getItem('jcm_demo_matriculas');
+                const datosGuardados = localStorage.getItem(APP.claveDatos);
+                try {
+                    localStorage.setItem('jcm_demo_estudiantes', JSON.stringify(estudiantesActualizados));
+                    localStorage.setItem('jcm_demo_matriculas', JSON.stringify(matriculasActualizadas));
+                    if (!guardarDatos(datosInstitucionales)) throw new Error('No se pudo actualizar el aforo de la sección.');
+                } catch (error) {
+                    try {
+                        if (estudiantesGuardados === null) localStorage.removeItem('jcm_demo_estudiantes');
+                        else localStorage.setItem('jcm_demo_estudiantes', estudiantesGuardados);
+                        if (matriculasGuardadas === null) localStorage.removeItem('jcm_demo_matriculas');
+                        else localStorage.setItem('jcm_demo_matriculas', matriculasGuardadas);
+                        if (datosGuardados === null) localStorage.removeItem(APP.claveDatos);
+                        else localStorage.setItem(APP.claveDatos, datosGuardados);
+                    } catch (rollbackError) {
+                        console.error('No se pudo revertir parcialmente el guardado de matrícula.', rollbackError);
+                    }
+                    console.error('No se pudieron guardar el estudiante y su matrícula.', error);
+                    mostrarToast('No se pudo guardar el estudiante y su matrícula en este navegador.', 'error');
+                    return;
+                }
 
                 mostrarToast('Estudiante registrado correctamente.', 'ok');
                 form.reset();
