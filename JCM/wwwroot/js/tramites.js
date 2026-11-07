@@ -116,18 +116,7 @@ document.addEventListener('DOMContentLoaded', () => {
     habilitarCrudLista({
         tbodyId: 'tbody-tramites',
         idField: 'codigo',
-        campos: [
-            { key: 'remitente', label: 'Remitente', validation: 'letters' },
-            { key: 'dni', label: 'DNI', validation: 'dni' },
-            { key: 'correo', label: 'Correo electrónico', type: 'email', optional: true },
-            { key: 'tipo', label: 'Tipo de documento', options: ['Solicitud', 'Certificado', 'Constancia', 'Oficio', 'Informe', 'Otro'] },
-            { key: 'asunto', label: 'Asunto' },
-            { key: 'folios', label: 'Número de folios', type: 'number', min: 1, max: 500 },
-            { key: 'fecha', label: 'Fecha de recepción', type: 'date' },
-            { key: 'archivo', label: 'Archivo adjunto', optional: true },
-            { key: 'estado', label: 'Estado', options: ['Registrado', 'Pendiente', 'En revisión', 'Atendido', 'Observado'] },
-            { key: 'observacion', label: 'Observación', multiline: true, optional: true }
-        ],
+        campos: camposEdicionTramite(),
         leerRegistros: () => datos.tramites,
         guardarRegistros: guardarTramites,
         alCambiar: renderizar

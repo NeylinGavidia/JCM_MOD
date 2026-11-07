@@ -4,10 +4,17 @@
     if (!sesionActiva()) return; // app.js se encarga de volver al inicio de sesión
 
     let datos = leerDatos();
-    const TIPOS = ['Solicitud', 'Certificado', 'Constancia', 'Oficio', 'Informe', 'Otro'];
-    const ESTADOS = { 'Pendiente': 'warn', 'En revisión': 'info', 'Atendido': 'ok' };
+    const TIPOS = TIPOS_DOCUMENTO;
 
     const $ = id => document.getElementById(id);
+
+    function claseEstado(estado) {
+        const normalizado = String(estado || '').toLocaleLowerCase('es');
+        if (normalizado === 'atendido') return 'ok';
+        if (normalizado === 'observado') return 'error';
+        if (normalizado === 'pendiente' || normalizado.includes('revisión')) return 'warn';
+        return 'info';
+    }
 
     /* ---------- Saludo ---------- */
     function pintarSaludo() {
@@ -69,8 +76,9 @@
         cuerpo.innerHTML = datos.tramites.slice(0, 6).map(t => {
             const f = new Date(t.fecha).toLocaleString('es-PE', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
             return '<tr><td><b>' + esc(t.codigo) + '</b></td><td>' + esc(t.remitente) + '</td><td>' + esc(t.tipo) + '</td><td>' + esc(t.asunto) + '</td>' +
-                '<td>' + esc(f) + '</td><td>' + esc(t.folios) + '</td><td><span class="chip ' + (ESTADOS[t.estado] || 'info') + '">' + esc(t.estado) + '</span></td>' +
-                '<td><a href="detalle.html?codigo=' + encodeURIComponent(t.codigo) + '">Ver expediente</a> ' + accionesCrudLista(t.codigo) + '</td></tr>';
+                '<td>' + esc(f) + '</td><td>' + esc(t.folios) + '</td><td><span class="chip ' + claseEstado(t.estado) + '">' + esc(t.estado) + '</span></td>' +
+                '<td><a class="btn btn-ver-expediente" href="detalle.html?codigo=' + encodeURIComponent(t.codigo) + '" aria-label="Ver expediente ' + esc(t.codigo) + '" title="Ver expediente">' +
+                '<span class="material-symbols-outlined" aria-hidden="true">visibility</span></a> ' + accionesCrudLista(t.codigo) + '</td></tr>';
         }).join('');
     }
 
@@ -214,14 +222,7 @@
     habilitarCrudLista({
         tbodyId: 'cuerpo-tramites',
         idField: 'codigo',
-        campos: [
-            { key: 'remitente', label: 'Remitente', validation: 'letters' },
-            { key: 'dni', label: 'DNI', validation: 'dni' },
-            { key: 'tipo', label: 'Tipo de documento', options: TIPOS },
-            { key: 'asunto', label: 'Asunto' },
-            { key: 'folios', label: 'Número de folios', type: 'number' },
-            { key: 'estado', label: 'Estado', options: ['Pendiente', 'En revisión', 'Atendido'] }
-        ],
+        campos: camposEdicionTramite(),
         leerRegistros: () => datos.tramites,
         guardarRegistros: (tramites) => {
             const anterior = datos.tramites;

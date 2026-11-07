@@ -471,6 +471,17 @@ a {
     min-width: 760px;
 }
 
+.tabla-caja tbody#cuerpo-tramites td:last-child {
+    white-space: nowrap;
+}
+
+.tabla-caja tbody#cuerpo-tramites td:last-child > .table-actions {
+    display: inline-flex;
+    vertical-align: middle;
+    margin-left: 6px;
+    gap: 6px;
+}
+
 table {
     width: 100%;
     border-collapse: collapse;

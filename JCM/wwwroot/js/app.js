@@ -13,6 +13,8 @@ const APP = {
     claveSesion: 'jcm_demo_sesion'
 };
 
+const TIPOS_DOCUMENTO = ['Solicitud', 'Certificado', 'Constancia', 'Oficio', 'Informe', 'Otro'];
+
 const MENU = [
     { id: 'principal', href: 'principal.html', icono: 'dashboard', texto: 'Panel Principal y Aforos' },
     { id: 'matricula', href: 'matricula.html', icono: 'how_to_reg', texto: 'Matrícula y Estudiantes' },
@@ -119,6 +121,21 @@ function accionesCrudLista(id) {
         '<button type="button" class="icon-btn btn-crud-editar" data-crud-editar="' + registroId + '" aria-label="Editar registro"><span class="material-symbols-outlined">edit</span></button>' +
         '<button type="button" class="icon-btn btn-crud-eliminar" data-crud-eliminar="' + registroId + '" aria-label="Eliminar registro"><span class="material-symbols-outlined">delete</span></button>' +
         '</div>';
+}
+
+function camposEdicionTramite() {
+    return [
+        { key: 'remitente', label: 'Remitente', validation: 'letters' },
+        { key: 'dni', label: 'DNI', validation: 'dni' },
+        { key: 'correo', label: 'Correo electrónico', type: 'email', optional: true },
+        { key: 'tipo', label: 'Tipo de documento', options: TIPOS_DOCUMENTO },
+        { key: 'asunto', label: 'Asunto' },
+        { key: 'folios', label: 'Número de folios', type: 'number', min: 1, max: 500 },
+        { key: 'fecha', label: 'Fecha de recepción', type: 'date' },
+        { key: 'archivo', label: 'Archivo adjunto', optional: true },
+        { key: 'estado', label: 'Estado', options: ['Registrado', 'Pendiente', 'En revisión', 'Atendido', 'Observado'] },
+        { key: 'observacion', label: 'Observación', multiline: true, optional: true }
+    ];
 }
 
 function habilitarCrudLista({ tbodyId, clave, idField = 'id', campos, alCambiar, alEliminar, leerRegistros, guardarRegistros }) {
