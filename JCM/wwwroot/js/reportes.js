@@ -1,4 +1,3 @@
-
 'use strict';
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -63,83 +62,41 @@ document.addEventListener('DOMContentLoaded', () => {
         };
     }
     function obtenerEstadisticasMatricula(datos) {
-        const anioSeleccionado = document.getElementById('anio').value;
+        const anio = document.getElementById('anio').value;
 
         const estudiantes = datos.estudiantes || [];
         const matriculas = datos.matriculas || [];
         const apoderados = datos.apoderados || [];
         const asignaciones = datos.asignaciones || [];
 
-        function obtenerAnio(matricula) {
-            if (matricula.anioLectivo) {
-                return String(matricula.anioLectivo);
-            }
+        let totalMatriculados = 0;
+        let totalPendientes = 0;
 
-            if (matricula.fechaMatricula) {
-                return String(matricula.fechaMatricula).substring(0, 4);
-            }
+        estudiantes.forEach(estudiante => {
+            const matricula = matriculas.find(item =>
+                String(item.estudianteId) === String(estudiante.id) &&
+                String(item.anioLectivo) === String(anio)
+            );
 
-            return '';
-        }
-
-        function normalizarEstado(estado) {
-            return String(estado || '')
+            const estado = String(matricula?.estado || '')
                 .trim()
                 .toLowerCase();
-        }
 
-        const matriculasDelAnio = matriculas.filter(matricula =>
-            obtenerAnio(matricula) === String(anioSeleccionado)
-        );
-
-        const idsMatriculados = new Set(
-            matriculasDelAnio
-                .filter(matricula => {
-                    const estado = normalizarEstado(matricula.estado);
-
-                    return estado === 'finalizado' ||
-                        estado === 'ratificado';
-                })
-                .map(matricula => String(matricula.estudianteId))
-                .filter(id => id && id !== 'undefined' && id !== 'null')
-        );
-
-        const idsEstudiantes = new Set(
-            estudiantes
-                .map(estudiante => String(estudiante.id))
-                .filter(id => id && id !== 'undefined' && id !== 'null')
-        );
-
-        // Evita contar matrículas de estudiantes que no están en el padrón.
-        const totalMatriculados = [...idsMatriculados]
-            .filter(id => idsEstudiantes.has(id))
-            .length;
-
-        const totalEstudiantes = idsEstudiantes.size;
-
-        const totalPendientes = Math.max(
-            0,
-            totalEstudiantes - totalMatriculados
-        );
-
-        const idsApoderados = new Set(
-            apoderados
-                .map(apoderado => String(apoderado.id))
-                .filter(id => id && id !== 'undefined' && id !== 'null')
-        );
-
-        const idsApoderadosAsociados = new Set(
-            asignaciones
-                .map(asignacion => String(asignacion.apoderadoId))
-                .filter(id => idsApoderados.has(id))
-        );
+            if (estado === 'finalizado' || estado === 'ratificado') {
+                totalMatriculados++;
+            } else {
+                totalPendientes++;
+            }
+        });
 
         return {
-            totalEstudiantes,
+            totalEstudiantes: estudiantes.length,
             totalMatriculados,
             totalPendientes,
-            totalApoderados: idsApoderados.size,
-            apoderadosAsociados: idsApoderadosAsociados.size,
+            totalApoderados: apoderados.length,
+            apoderadosAsociados: new Set(
+                asignaciones.map(item => String(item.apoderadoId))
+            ).size,
             totalAsociaciones: asignaciones.length
         };
     }
@@ -189,62 +146,94 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Preparar la información del reporte de matrícula
     function reporteMatricula(datos) {
-        const grado = document.getElementById('grado').value;
-        const seccion = document.getElementById('seccion').value;
+        const anio = document.getElementById('anio').value;
 
-        const estadisticas = obtenerEstadisticasMatricula(datos);
-        const aforo = datos.aforo || [];
+        const estudiantes = datos.estudiantes || [];
+        const matriculas = datos.matriculas || [];
+        const apoderados = datos.apoderados || [];
+        const asignaciones = datos.asignaciones || [];
 
-        const registros = aforo.filter(item => {
-            const cumpleGrado =
-                grado === 'Todos' ||
-                String(item.seccion || '').startsWith(grado);
+        function nombreCompleto(persona) {
+            if (!persona) return 'No registrado';
 
-            const cumpleSeccion =
-                seccion === 'Todas' ||
-                String(item.seccion || '').endsWith(seccion);
+            return [
+                persona.nombre,
+                persona.apellidoPaterno,
+                persona.apellidoMaterno
+            ].filter(Boolean).join(' ');
+        }
 
-            return cumpleGrado && cumpleSeccion;
+        function normalizarEstado(estado) {
+            return String(estado || '').trim().toLowerCase();
+        }
+
+        const registros = estudiantes.map(estudiante => {
+            const matricula = matriculas.find(item =>
+                String(item.estudianteId) === String(estudiante.id) &&
+                String(item.anioLectivo) === String(anio)
+            );
+
+            const estado = matricula
+                ? normalizarEstado(matricula.estado)
+                : 'pendiente';
+
+            const matriculado =
+                estado === 'finalizado' ||
+                estado === 'ratificado';
+
+            const asignacion = asignaciones.find(item =>
+                String(item.estudianteId) === String(estudiante.id)
+            );
+
+            const apoderado = asignacion
+                ? apoderados.find(item =>
+                    String(item.id) === String(asignacion.apoderadoId)
+                )
+                : null;
+
+            return {
+                estudiante: nombreCompleto(estudiante),
+                dni: estudiante.dni || 'No registrado',
+                estado: matriculado ? 'Matriculado' : 'Pendiente',
+                apoderado: nombreCompleto(apoderado),
+                parentesco: asignacion
+                    ? asignacion.parentesco || 'No especificado'
+                    : 'Sin asociación'
+            };
         });
 
-        const totalCapacidad = registros.reduce(
-            (suma, item) => suma + Number(item.capacidad || 0),
-            0
+        const matriculados = registros.filter(
+            item => item.estado === 'Matriculado'
         );
 
-        const totalVacantes = Math.max(
-            0,
-            totalCapacidad - estadisticas.totalMatriculados
+        const pendientes = registros.filter(
+            item => item.estado === 'Pendiente'
         );
 
-        tituloActual = 'Reporte de matrículas';
+        tituloActual = 'Reporte de matrículas - ' + anio;
 
         encabezadosActuales = [
-            'Sección',
-            'Capacidad',
-            'Matriculados',
-            'Vacantes'
+            'Estudiante',
+            'DNI',
+            'Estado de matrícula',
+            'Apoderado',
+            'Parentesco'
         ];
 
         filasActuales = registros.map(item => [
-            item.seccion,
-            item.capacidad,
-            item.matriculados,
-            Math.max(
-                0,
-                Number(item.capacidad || 0) -
-                Number(item.matriculados || 0)
-            )
+            item.estudiante,
+            item.dni,
+            item.estado,
+            item.apoderado,
+            item.parentesco
         ]);
 
         const resumen =
-            `Año ${document.getElementById('anio').value}` +
-            ` | Estudiantes registrados: ${estadisticas.totalEstudiantes}` +
-            ` | Estudiantes matriculados: ${estadisticas.totalMatriculados}` +
-            ` | Estudiantes pendientes: ${estadisticas.totalPendientes}` +
-            ` | Apoderados registrados: ${estadisticas.totalApoderados}` +
-            ` | Capacidad de las secciones mostradas: ${totalCapacidad}` +
-            ` | Vacantes según el aforo mostrado: ${totalVacantes}`;
+            'Año: ' + anio +
+            ' | Total de estudiantes: ' + registros.length +
+            ' | Matriculados: ' + matriculados.length +
+            ' | Pendientes: ' + pendientes.length +
+            ' | Apoderados registrados: ' + apoderados.length;
 
         mostrarTabla(
             tituloActual,
