@@ -24,14 +24,123 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Obtener los datos guardados por el sistema
     function obtenerDatos() {
-        if (typeof leerDatos === 'function') {
-            return leerDatos();
+        function leerLista(clave) {
+            try {
+                const valor = JSON.parse(localStorage.getItem(clave) || '[]');
+                return Array.isArray(valor) ? valor : [];
+            } catch (error) {
+                console.error('Error al leer ' + clave, error);
+                return [];
+            }
         }
 
-        const datos = localStorage.getItem('jcm_demo_datos');
-        return datos ? JSON.parse(datos) : {
-            aforo: [],
-            tramites: []
+        let datosGenerales = {};
+
+        if (typeof leerDatos === 'function') {
+            datosGenerales = leerDatos() || {};
+        } else {
+            try {
+                datosGenerales = JSON.parse(
+                    localStorage.getItem('jcm_demo_datos') || '{}'
+                );
+            } catch (error) {
+                datosGenerales = {};
+            }
+        }
+
+        return {
+            ...datosGenerales,
+            estudiantes: leerLista('jcm_demo_estudiantes'),
+            matriculas: leerLista('jcm_demo_matriculas'),
+            apoderados: leerLista('jcm_demo_apoderados'),
+            asignaciones: leerLista('jcm_demo_asignaciones'),
+            aforo: Array.isArray(datosGenerales.aforo)
+                ? datosGenerales.aforo
+                : [],
+            tramites: Array.isArray(datosGenerales.tramites)
+                ? datosGenerales.tramites
+                : []
+        };
+    }
+    function obtenerEstadisticasMatricula(datos) {
+        const anioSeleccionado = document.getElementById('anio').value;
+
+        const estudiantes = datos.estudiantes || [];
+        const matriculas = datos.matriculas || [];
+        const apoderados = datos.apoderados || [];
+        const asignaciones = datos.asignaciones || [];
+
+        function obtenerAnio(matricula) {
+            if (matricula.anioLectivo) {
+                return String(matricula.anioLectivo);
+            }
+
+            if (matricula.fechaMatricula) {
+                return String(matricula.fechaMatricula).substring(0, 4);
+            }
+
+            return '';
+        }
+
+        function normalizarEstado(estado) {
+            return String(estado || '')
+                .trim()
+                .toLowerCase();
+        }
+
+        const matriculasDelAnio = matriculas.filter(matricula =>
+            obtenerAnio(matricula) === String(anioSeleccionado)
+        );
+
+        const idsMatriculados = new Set(
+            matriculasDelAnio
+                .filter(matricula => {
+                    const estado = normalizarEstado(matricula.estado);
+
+                    return estado === 'finalizado' ||
+                        estado === 'ratificado';
+                })
+                .map(matricula => String(matricula.estudianteId))
+                .filter(id => id && id !== 'undefined' && id !== 'null')
+        );
+
+        const idsEstudiantes = new Set(
+            estudiantes
+                .map(estudiante => String(estudiante.id))
+                .filter(id => id && id !== 'undefined' && id !== 'null')
+        );
+
+        // Evita contar matrículas de estudiantes que no están en el padrón.
+        const totalMatriculados = [...idsMatriculados]
+            .filter(id => idsEstudiantes.has(id))
+            .length;
+
+        const totalEstudiantes = idsEstudiantes.size;
+
+        const totalPendientes = Math.max(
+            0,
+            totalEstudiantes - totalMatriculados
+        );
+
+        const idsApoderados = new Set(
+            apoderados
+                .map(apoderado => String(apoderado.id))
+                .filter(id => id && id !== 'undefined' && id !== 'null')
+        );
+
+        const idsApoderadosAsociados = new Set(
+            asignaciones
+                .map(asignacion => String(asignacion.apoderadoId))
+                .filter(id => idsApoderados.has(id))
+        );
+
+        return {
+            totalEstudiantes,
+            totalMatriculados,
+            totalPendientes,
+            totalApoderados: idsApoderados.size,
+            apoderadosAsociados: idsApoderadosAsociados.size,
+            totalAsociaciones: asignaciones.length
         };
     }
 
@@ -83,27 +192,30 @@ document.addEventListener('DOMContentLoaded', () => {
         const grado = document.getElementById('grado').value;
         const seccion = document.getElementById('seccion').value;
 
+        const estadisticas = obtenerEstadisticasMatricula(datos);
         const aforo = datos.aforo || [];
 
         const registros = aforo.filter(item => {
             const cumpleGrado =
-                grado === 'Todos' || item.seccion.startsWith(grado);
+                grado === 'Todos' ||
+                String(item.seccion || '').startsWith(grado);
 
             const cumpleSeccion =
-                seccion === 'Todas' || item.seccion.endsWith(seccion);
+                seccion === 'Todas' ||
+                String(item.seccion || '').endsWith(seccion);
 
             return cumpleGrado && cumpleSeccion;
         });
 
-        const totalMatriculados = registros.reduce(
-            (suma, item) => suma + Number(item.matriculados || 0), 0
-        );
-
         const totalCapacidad = registros.reduce(
-            (suma, item) => suma + Number(item.capacidad || 0), 0
+            (suma, item) => suma + Number(item.capacidad || 0),
+            0
         );
 
-        const totalVacantes = totalCapacidad - totalMatriculados;
+        const totalVacantes = Math.max(
+            0,
+            totalCapacidad - estadisticas.totalMatriculados
+        );
 
         tituloActual = 'Reporte de matrículas';
 
@@ -118,14 +230,27 @@ document.addEventListener('DOMContentLoaded', () => {
             item.seccion,
             item.capacidad,
             item.matriculados,
-            Number(item.capacidad) - Number(item.matriculados)
+            Math.max(
+                0,
+                Number(item.capacidad || 0) -
+                Number(item.matriculados || 0)
+            )
         ]);
+
+        const resumen =
+            `Año ${document.getElementById('anio').value}` +
+            ` | Estudiantes registrados: ${estadisticas.totalEstudiantes}` +
+            ` | Estudiantes matriculados: ${estadisticas.totalMatriculados}` +
+            ` | Estudiantes pendientes: ${estadisticas.totalPendientes}` +
+            ` | Apoderados registrados: ${estadisticas.totalApoderados}` +
+            ` | Capacidad de las secciones mostradas: ${totalCapacidad}` +
+            ` | Vacantes según el aforo mostrado: ${totalVacantes}`;
 
         mostrarTabla(
             tituloActual,
             encabezadosActuales,
             filasActuales,
-            `Total matriculados: ${totalMatriculados} | Capacidad: ${totalCapacidad} | Vacantes: ${totalVacantes}`
+            resumen
         );
     }
 
@@ -188,20 +313,22 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Preparar el consolidado general
     function reporteConsolidado(datos) {
-        const aforo = datos.aforo || [];
-        const tramites = datos.tramites || [];
+        const estadisticas = obtenerEstadisticasMatricula(datos);
 
-        const matriculados = aforo.reduce(
-            (suma, item) => suma + Number(item.matriculados || 0), 0
-        );
+        const tramites = datos.tramites || [];
+        const aforo = datos.aforo || [];
 
         const capacidad = aforo.reduce(
             (suma, item) => suma + Number(item.capacidad || 0), 0
         );
 
-        const vacantes = capacidad - matriculados;
+        const matriculadosAforo = aforo.reduce(
+            (suma, item) => suma + Number(item.matriculados || 0), 0
+        );
 
-        const pendientes = tramites.filter(
+        const vacantes = Math.max(0, capacidad - matriculadosAforo);
+
+        const pendientesDocumentos = tramites.filter(
             item => item.estado === 'Pendiente'
         ).length;
 
@@ -218,12 +345,16 @@ document.addEventListener('DOMContentLoaded', () => {
         encabezadosActuales = ['Indicador', 'Cantidad'];
 
         filasActuales = [
-            ['Secciones registradas', aforo.length],
-            ['Capacidad total', capacidad],
-            ['Estudiantes matriculados', matriculados],
-            ['Vacantes disponibles', vacantes],
+            ['Estudiantes registrados', estadisticas.totalEstudiantes],
+            ['Estudiantes matriculados', estadisticas.totalMatriculados],
+            ['Estudiantes pendientes de matrícula', estadisticas.totalPendientes],
+            ['Apoderados registrados', estadisticas.totalApoderados],
+            ['Apoderados asociados a estudiantes', estadisticas.apoderadosAsociados],
+            ['Asociaciones apoderado-estudiante', estadisticas.totalAsociaciones],
+            ['Capacidad total de secciones', capacidad],
+            ['Vacantes según aforo registrado', vacantes],
             ['Documentos recibidos', tramites.length],
-            ['Documentos pendientes', pendientes],
+            ['Documentos pendientes', pendientesDocumentos],
             ['Documentos en revisión', revision],
             ['Documentos atendidos', atendidos]
         ];
@@ -232,7 +363,8 @@ document.addEventListener('DOMContentLoaded', () => {
             tituloActual,
             encabezadosActuales,
             filasActuales,
-            'Resumen general de matrícula y recepción de documentos.'
+            'Resumen institucional del año ' +
+            document.getElementById('anio').value
         );
     }
 
@@ -392,6 +524,7 @@ document.addEventListener('DOMContentLoaded', () => {
     btnGenerar.addEventListener('click', generarReporte);
 
     btnLimpiar.addEventListener('click', () => {
+        document.getElementById('anio').addEventListener('change', generarReporte);
         document.getElementById('anio').value = '2026';
         document.getElementById('grado').value = 'Todos';
         document.getElementById('seccion').value = 'Todas';
